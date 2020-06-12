@@ -1,0 +1,49 @@
+#!/bin/bash
+# Runs a playbook in a project (for cron)
+
+# Add ARA to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
+
+# Load GPG agent's soocket if it isn't there
+[ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+PROJECTDIR=/opt/ansible/projects
+PLAYBOOKDIR=playbooks
+UPDATE_ROLES=false
+
+usage="Usage: $0 [-p project] [-s] playbook.yml
+
+    -p project   Name of the project to run the playbook from
+    -s           Make Ansible's output sparse
+    -h           This text
+"
+
+while getopts "hp:sr" opt; do
+  case ${opt} in
+    p)
+      PROJECT="$OPTARG"
+      ;;
+    s)
+      export ANSIBLE_DISPLAY_FAILED_STDERR=true
+      export ANSIBLE_DISPLAY_OK_HOSTS=false
+      export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+      ;;
+    r)
+      UPDATE_ROLES=true
+      ;;
+    h)
+      echo -e "$usage"
+      exit 0
+      ;;
+  esac
+done
+
+shift $[$OPTIND -1]
+PLAYBOOK=$1
+shift 1
+
+[ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && exit 1
+
+cd $PROJECTDIR/$PROJECT
+$UPDATE_ROLES && ansible-galaxy install -fr roles/requirements.yml
+ansible-playbook --diff $PLAYBOOKDIR/$PLAYBOOK $@
