@@ -1,10 +1,10 @@
-= Some tools for use with Ansible =
+# Some tools for use with Ansible
 This repo provides some tools I use to run Ansible scripts.
 
 * retrieve_vault.sh: this script is able to retrieve an Ansible vault password from a GPG encrypted file
 * runansible: this script wraps ansible-playbook in some options I like to use
 
-== Setup retrieve_vault.sh ==
+## Setup retrieve_vault.sh
 The idea behind this script is to retrieve the GPG encrypted ansible-vault key from a file.
 
 The following steps set up a project for use with this script:
@@ -24,7 +24,7 @@ The following steps set up a project for use with this script:
 If your GPG agent is set up, once Ansible wants to access a vault secret now, you will be asked for the
 GPG passphrase.
 
-== Setup runansible ==
+## Setup runansible
 This script works with a similar directory structure as retrieve_vault.sh.
 
 * Place the script in your PATH
