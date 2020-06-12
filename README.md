@@ -51,6 +51,7 @@ runansible -h
 
 Usage: /usr/local/bin/runansible [-p project] [-s] playbook.yml
 
+    -g           Update git checkout before running
     -p project   Name of the project to run the playbook from
     -r           Update roles before running playbook
     -s           Make Ansible's output sparse
