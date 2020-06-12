@@ -10,16 +10,28 @@ The idea behind this script is to retrieve the GPG encrypted ansible-vault key f
 The following steps set up a project for use with this script:
 
 * Create some directories
- mkdir -p /opt/ansible/projects/myproject /opt/ansible/vaults
+
+```
+mkdir -p /opt/ansible/projects/myproject /opt/ansible/vaults
+```
 * Put this script in /opt/ansible/vaults/retrieve_vault.sh (copy, do not symlink)
 * Place your vault key in /opt/ansible/vaults/myproject.gpg
- echo 'secretkey' | gpg -r me@example.com -e > /opt/ansible/vaults/myproject.gpg
+
+```
+echo 'secretkey' | gpg -r me@example.com -e > /opt/ansible/vaults/myproject.gpg
+```
 * Set up the regular things for your Ansible project (config, playbooks etc.)
- cd /opt/ansible/projects/myproject
- do_stuff
+
+```
+cd /opt/ansible/projects/myproject
+do_stuff
+```
 * Set vault_password_file to .ansible-vault
 * Symlink the script into your project
- ln -s /opt/ansible/vaults/retrieve_vault.sh /opt/ansible/projects/myproject/.ansible-vault
+
+```
+ln -s /opt/ansible/vaults/retrieve_vault.sh /opt/ansible/projects/myproject/.ansible-vault
+```
 
 If your GPG agent is set up, once Ansible wants to access a vault secret now, you will be asked for the
 GPG passphrase.
@@ -28,7 +40,10 @@ GPG passphrase.
 This script works with a similar directory structure as retrieve_vault.sh.
 
 * Place the script in your PATH
- ln -s /path/to/repo/runansible /usr/local/bin
+
+```
+ln -s /path/to/repo/runansible /usr/local/bin
+```
 * You can now use it to run your playbook runs!
 
 ```
