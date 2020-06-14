@@ -59,7 +59,7 @@ EOF
 
     echo $HOST_DISTRO >> /tmp/distrolist.wiki
 
-    cat <<EOF >/tmp/INV:${HOST_NAME%%.*}.wiki
+    cat <<EOF >/tmp/INV:${HOST_NAME}.wiki
   Hostname: ${HOST_NAME%%.*}
   FQDN: $HOST_FQDN
   OS: $HOST_DISTRO ${HOST_DISTRO_VERSION}
