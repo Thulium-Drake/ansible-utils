@@ -14,6 +14,9 @@
 
 . /opt/ansible/facts2mediawiki.conf
 
+# Load GPG agent's soocket if it isn't there
+[ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
 cd $ANSIBLE_DIR
 # The following variable controls when the page of a host should be stale and marked as such
 STALE=$(date -d '2 weeks ago' +%s)
