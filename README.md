@@ -57,3 +57,12 @@ Usage: /usr/local/bin/runansible [-p project] [-s] playbook.yml
     -s           Make Ansible's output sparse
     -h           This text
 ```
+
+# facts2mediawiki.sh
+This script will use Ansible's JSON file fact cache and generate pages for Mediawiki.
+
+They can be imported directly if you have a Mediawiki server running somewhere. Or,
+when you run Mediawiki in Docker, the pages can be copied to your docker server for
+processing by the container.
+
+This requires a docker image that periodically runs a script to import them.
