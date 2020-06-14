@@ -16,13 +16,13 @@ STALE=$(date -d '2 weeks ago' +%s)
 ###
 # Generate per host status page
 ###
-for HOST_NAME in $(ansible-playbook playbooks/$MAIN_PLAYBOOK --list-hosts | tail -n+7)
+for HOST_NAME in $(/usr/bin/ansible-playbook playbooks/$MAIN_PLAYBOOK --list-hosts | tail -n+7)
 do
     [[ $HOST_NAME == '' ]] && continue
     STALE_NOTE=''
 
     [[ ! -f $FACTS_CACHE/$HOST_NAME ]] && {
-      cat <<EOF >/tmp/INV:${HOST_NAME%%.*}.wiki
+      cat <<EOF >/tmp/INV:${HOST_NAME}.wiki
   Hostname: ${HOST_NAME%%.*}
   No further information available, this host hasn't been inventoried by Ansible just yet.
 
