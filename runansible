@@ -11,23 +11,28 @@ PROJECTDIR=/opt/ansible/projects
 PLAYBOOKDIR=playbooks
 UPDATE_ROLES=false
 UPDATE_GIT=false
+INVENTORY=""
 
-usage="Usage: $0 [-p project] [-s] playbook.yml
+usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
 
     -g           Update git checkout before running
     -p project   Name of the project to run the playbook from
+    -i project   Name of the inventory to use, can be provided multiple times
     -r           Update roles before running playbook
     -s           Make Ansible's output sparse
     -h           This text
 "
 
-while getopts "ghp:sr" opt; do
+while getopts "ghi:p:sr" opt; do
   case ${opt} in
     g)
       UPDATE_GIT=true
       ;;
     p)
       PROJECT="$OPTARG"
+      ;;
+    i)
+      INVENTORY="${INVENTORY} -i $OPTARG"
       ;;
     s)
       export ANSIBLE_DISPLAY_FAILED_STDERR=true
@@ -53,4 +58,4 @@ shift 1
 cd $PROJECTDIR/$PROJECT
 $UPDATE_GIT && git pull >/dev/null 2>&1
 $UPDATE_ROLES && ansible-galaxy install -fr roles/requirements.yml
-ansible-playbook --diff $PLAYBOOKDIR/$PLAYBOOK $@
+ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK $@

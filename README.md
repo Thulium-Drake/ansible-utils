@@ -49,10 +49,11 @@ ln -s /path/to/repo/runansible /usr/local/bin
 ```
 runansible -h
 
-Usage: /usr/local/bin/runansible [-p project] [-s] playbook.yml
+Usage: /usr/local/bin/runansible [-p project] [-i inventory] [-s] playbook.yml
 
     -g           Update git checkout before running
     -p project   Name of the project to run the playbook from
+    -i project   Name of the inventory to use, can be provided multiple times
     -r           Update roles before running playbook
     -s           Make Ansible's output sparse
     -h           This text
