@@ -5,7 +5,12 @@
 #ANSIBLE_DIR="/opt/ansible/projects/myproject"
 #FACTS_CACHE="$ANSIBLE_DIR/cache"
 #MAIN_PLAYBOOK="main.yml"
+# for direct use with Mediawiki
 #WIKI="root@wiki"
+# Copy the files to your docker volume for processing.
+# This requires a docker image that periodically imports
+# all files in the configured location
+#DOCKER_STORAGE="root@docker:/some/docker/volume"
 
 . /opt/ansible/facts2mediawiki.conf
 
@@ -111,9 +116,6 @@ function upload_wiki() {
     rm /tmp/*.wiki"
 }
 
-# Copy the files to your docker volume for processing.
-# This requires a docker image that periodically imports
-# all files in the configured location
 function upload_docker() {
   scp -q /tmp/*.wiki $DOCKER_STORAGE
 }
