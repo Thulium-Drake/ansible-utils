@@ -1,13 +1,15 @@
 # Some tools for use with Ansible
 This repo provides some tools I use to run Ansible scripts.
 
+* facts2mediawiki.sh: crude script to generate Mediawiki pages from Ansible JSON-formatted fact caches
+* gpgkey: not specifically for Ansible, but will check if GPG keys are loaded in an gpg-agent (for unattended use)
 * retrieve_vault.sh: this script is able to retrieve an Ansible vault password from a GPG encrypted file
 * runansible: this script wraps ansible-playbook in some options I like to use
-* gpgkey: not specifically for Ansible, but will check if GPG keys are loaded in an gpg-agent (for unattended use)
 * update_checkout: also not specifically for Ansible, but will update a Git checkout and any submodules present
 
 ## Setup retrieve_vault.sh
-The idea behind this script is to retrieve the GPG encrypted ansible-vault key from a file.
+The idea behind this script is to retrieve the GPG encrypted ansible-vault key
+from a file (see gpgkey for a way to load an unattended agent).
 
 The following steps set up a project for use with this script:
 
