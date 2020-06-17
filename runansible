@@ -11,6 +11,7 @@ PROJECTDIR=/opt/ansible/projects
 PLAYBOOKDIR=playbooks
 UPDATE_ROLES=false
 UPDATE_GIT=false
+SPARSE=false
 INVENTORY=""
 
 usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
@@ -38,6 +39,7 @@ while getopts "ghi:p:sr" opt; do
       export ANSIBLE_DISPLAY_FAILED_STDERR=true
       export ANSIBLE_DISPLAY_OK_HOSTS=false
       export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+      export SPARSE=true
       ;;
     r)
       UPDATE_ROLES=true
@@ -57,5 +59,8 @@ shift 1
 
 cd $PROJECTDIR/$PROJECT
 $UPDATE_GIT && git pull >/dev/null 2>&1
-$UPDATE_ROLES && ansible-galaxy install -fr roles/requirements.yml
+$UPDATE_ROLES && {
+  $SPARSE && ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1 ||
+  ansible-galaxy install -fr roles/requirements.yml
+}
 ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK $@
