@@ -58,7 +58,13 @@ shift 1
 [ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && exit 1
 
 cd $PROJECTDIR/$PROJECT
-$UPDATE_GIT && git pull >/dev/null 2>&1
+
+# check for update_checkout and use that if it's present
+$UPDATE_GIT && {
+  [[ -x scripts/update_checkout.sh ]] && scripts/update_checkout.sh > /dev/null 2>&1 ||
+  git pull >/dev/null 2>&1
+}
+
 $UPDATE_ROLES && {
   $SPARSE && ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1 ||
   ansible-galaxy install -fr roles/requirements.yml

@@ -1,0 +1,42 @@
+#!/bin/bash
+# Get keygrips
+keygrip_sign=$(gpg --list-secret-keys --with-keygrip | grep -A 2 "^sec" | grep Keygrip | sed 's/.* = //')
+keygrip_enc=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[E\]" | grep Keygrip | sed 's/.* = //')
+keygrip_ssh=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[A\]" | grep Keygrip | sed 's/.* = //')
+
+function check() {
+  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  do
+    gpg-connect-agent "keyinfo --list" /bye | grep $kg | grep " 1 " > /dev/null 2>&1
+    test $? -ne 0 && echo "$kg is not loaded"
+  done
+}
+
+function unlock() {
+  read -sp "Enter Passphrase: " passphrase
+
+  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  do
+    /usr/lib/gnupg2/gpg-preset-passphrase -c $kg <<< $passphrase
+  done
+}
+
+function lock() {
+  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  do
+    gpg-connect-agent "clear_passphrase --mode=normal $kg" /bye
+    /usr/lib/gnupg2/gpg-preset-passphrase -f $kg
+  done
+}
+
+case "$1" in
+  "-c")
+     check
+  ;;
+  "-l")
+     lock
+  ;;
+  "-u")
+     unlock
+  ;;
+esac
