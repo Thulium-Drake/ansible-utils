@@ -7,12 +7,16 @@ export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
+# Defaults
 PROJECTDIR=/opt/ansible/projects
 PLAYBOOKDIR=playbooks
 UPDATE_ROLES=false
 UPDATE_GIT=false
 SPARSE=false
 INVENTORY=""
+
+# Override any defaults that are set by the user
+test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
 usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
 
@@ -66,7 +70,23 @@ $UPDATE_GIT && {
 }
 
 $UPDATE_ROLES && {
-  $SPARSE && ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1 ||
-  ansible-galaxy install -fr roles/requirements.yml
+  [[ -f roles/requirements.yml ]] && {
+    $SPARSE && {
+      ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1
+      ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
+    } || {
+      ansible-galaxy install -fr roles/requirements.yml
+      ansible-galaxy collection install -fr roles/requirements.yml
+  }
+  } || {
+    $SPARSE && {
+      ansible-galaxy install -fr requirements.yml >/dev/null 2>&1
+      ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
+    } || {
+      ansible-galaxy install -fr requirements.yml
+      ansible-galaxy collection install -fr requirements.yml
+    }
+  }
 }
+
 ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK $@
