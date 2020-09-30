@@ -89,4 +89,4 @@ $UPDATE_ROLES && {
   }
 }
 
-ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK $@
+ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
