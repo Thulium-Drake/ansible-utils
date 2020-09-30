@@ -1,8 +1,12 @@
 #!/bin/bash
 # This script requires GnuPG 2.2 or higher, this is only available on EL7
-# with the following package: https://copr.fedorainfracloud.org/coprs/icon/lfit/package/gnupg22-static/
+# with the following package: https://copr.fedorainfracloud.org/coprs/icon/lfit/package/gnupg22-static
 # After installing the package, create the following symlink as well
 # ln -s /usr/bin/pinentry /opt/gnupg22/bin/pinentry
+#
+# Set the following line in any user that should use these binaries:
+# export PATH=/opt/gnupg22/bin:$PATH
+
 # Get keygrips
 keygrip_sign=$(gpg --list-secret-keys --with-keygrip | grep -A 2 "^sec" | grep Keygrip | sed 's/.* = //')
 keygrip_enc=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[E\]" | grep Keygrip | sed 's/.* = //')
