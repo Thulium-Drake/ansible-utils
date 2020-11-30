@@ -11,6 +11,7 @@ export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
 PROJECTDIR=/opt/ansible/projects
 PLAYBOOKDIR=playbooks
 UPDATE_ROLES=false
+OLD_ANSIBLE=false
 UPDATE_GIT=false
 SPARSE=false
 INVENTORY=""
@@ -24,11 +25,12 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
     -p project   Name of the project to run the playbook from
     -i project   Name of the inventory to use, can be provided multiple times
     -r           Update roles before running playbook
+    -R           Update roles before running playbook (compatible with 2.9)
     -s           Make Ansible's output sparse
     -h           This text
 "
 
-while getopts "ghi:p:sr" opt; do
+while getopts "ghi:p:srR" opt; do
   case ${opt} in
     g)
       UPDATE_GIT=true
@@ -47,6 +49,10 @@ while getopts "ghi:p:sr" opt; do
       ;;
     r)
       UPDATE_ROLES=true
+      ;;
+    R)
+      UPDATE_ROLES=true
+      OLD_ANSIBLE=true
       ;;
     h)
       echo -e "$usage"
@@ -73,18 +79,18 @@ $UPDATE_ROLES && {
   [[ -f roles/requirements.yml ]] && {
     $SPARSE && {
       ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1
-      ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
     } || {
       ansible-galaxy install -fr roles/requirements.yml
-      ansible-galaxy collection install -fr roles/requirements.yml
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml
   }
   } || {
     $SPARSE && {
       ansible-galaxy install -fr requirements.yml >/dev/null 2>&1
-      ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
     } || {
       ansible-galaxy install -fr requirements.yml
-      ansible-galaxy collection install -fr requirements.yml
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml
     }
   }
 }
