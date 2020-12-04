@@ -4,6 +4,11 @@ keygrip_sign=$(gpg --list-secret-keys --with-keygrip | grep -A 2 "^sec" | grep K
 keygrip_enc=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[E\]" | grep Keygrip | sed 's/.* = //')
 keygrip_ssh=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[A\]" | grep Keygrip | sed 's/.* = //')
 
+test -f /usr/lib/gnupg2/gpg-preset-passphrase && gpgpresetpassphrase=/usr/lib/gnupg2/gpg-preset-passphrase
+test -f /usr/libexec/gpg-preset-passphrase && gpgpresetpassphrase=/usr/libexec/gpg-preset-passphrase
+
+test "$gpgpresetpassphrase" == "" && echo "ERROR: no gpg-preset-passphrase found!" && exit 1
+
 function check() {
   for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
   do
@@ -17,7 +22,7 @@ function unlock() {
 
   for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
   do
-    /usr/lib/gnupg2/gpg-preset-passphrase -c $kg <<< $passphrase
+    $gpgpresetpassphrase -c $kg <<< $passphrase
   done
 }
 
@@ -25,7 +30,7 @@ function lock() {
   for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
   do
     gpg-connect-agent "clear_passphrase --mode=normal $kg" /bye
-    /usr/lib/gnupg2/gpg-preset-passphrase -f $kg
+    $gpgpresetpassphrase -f $kg
   done
 }
 
