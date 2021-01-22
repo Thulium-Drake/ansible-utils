@@ -13,7 +13,7 @@ test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
 usage="Usage: $0 [-p project] [-i] [-f file] variable|[group]
 
-    -f file      Which vars file (if the variable you wish to show is in a specific file)
+    -f file      Which vars file (which vars file to use, e.g. database_servers.yml)
     -p project   Name of the project to retrieve data from
     -i           Inventory mode, show groups instead of variables,
                  if no group is supplied, 'all' is used
