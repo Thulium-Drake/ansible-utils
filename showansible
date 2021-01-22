@@ -1,0 +1,62 @@
+#!/bin/bash
+# Shows various Ansible stuff
+
+# Load GPG agent's soocket if it isn't there
+[ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+# Defaults
+PROJECTDIR=/opt/ansible/projects
+INVENTORYDIR=inventory
+
+# Override any defaults that are set by the user
+test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
+
+usage="Usage: $0 [-p project] [-i] [-f file] variable|[group]
+
+    -f file      Which vars file (if the variable you wish to show is in a specific file)
+    -p project   Name of the project to retrieve data from
+    -i           Inventory mode, show groups instead of variables,
+                 if no group is supplied, 'all' is used
+    -h           This text
+"
+
+FILE=''
+MODE=var
+
+while getopts "f:ihlp:" opt; do
+  case ${opt} in
+    f)
+      FILE="$OPTARG"
+      ;;
+    i)
+      MODE=inventory
+      INPUT='all'
+      ;;
+    p)
+      PROJECT="$OPTARG"
+      ;;
+    h)
+      echo -e "$usage"
+      exit 0
+      ;;
+  esac
+done
+
+shift $[$OPTIND -1]
+[[ $INPUT == '' ]] && INPUT=$1
+shift 1
+
+[ -z "$PROJECT" ] || [ -z "$INPUT" ] && echo "$usage" && exit 1
+
+cd $PROJECTDIR/$PROJECT
+
+[[ "$FILE" != '' ]] && FILE="-e @$(find $INVENTORYDIR -name $FILE | tail -1)"
+
+case "$MODE" in
+  var)
+    ansible -i /dev/null localhost -m debug -a var=$INPUT $FILE
+    ;;
+  inventory)
+    ansible-inventory --graph $INPUT
+    ;;
+esac

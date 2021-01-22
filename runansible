@@ -65,7 +65,7 @@ shift $[$OPTIND -1]
 PLAYBOOK=$1
 shift 1
 
-[ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && exit 1
+[ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && echo "$usage" && exit 1
 
 cd $PROJECTDIR/$PROJECT
 
