@@ -5,6 +5,7 @@ This repo provides some tools I use to run Ansible scripts.
 * gpgkey: not specifically for Ansible, but will check if GPG keys are loaded in an gpg-agent (for unattended use)
 * gpgkey_el7: this version uses paths for EL7 (see description in script)
 * retrieve_vault.sh: this script is able to retrieve an Ansible vault password from a GPG encrypted file
+* showansible: this script will encrypt values for use in the desired project
 * runansible: this script wraps ansible-playbook in some options I like to use
 * showansible: this script will retrieve variables from your inventory and show them on the commandline
 * update_checkout: also not specifically for Ansible, but will update a Git checkout and any submodules present

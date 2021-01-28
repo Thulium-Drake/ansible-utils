@@ -1,0 +1,49 @@
+#!/bin/bash
+# Wrapper for Ansible Vault
+
+# Load GPG agent's soocket if it isn't there
+[ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+# Defaults
+PROJECTDIR=/opt/ansible/projects
+
+# Override any defaults that are set by the user
+test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
+
+usage="Usage: $0 [-p project] value-to-encrypt
+
+    -p project   Name of the project to encrypt a value for
+    -h           This text
+
+If the value-to-encrypt is not provided, the script will prompt for it.
+"
+
+FILE=''
+MODE=var
+
+while getopts "hp:" opt; do
+  case ${opt} in
+    p)
+      PROJECT="$OPTARG"
+      ;;
+    h)
+      echo -e "$usage"
+      exit 0
+      ;;
+  esac
+done
+
+shift $[$OPTIND -1]
+INPUT="$@"
+
+[ -z "$INPUT" ] && while read -rp $'Type the value to be encrypted. Then press ENTER to continue: \n' i
+do
+  INPUT="$i"
+  [ -n "$INPUT" ] && break
+done
+
+[ -z "$PROJECT" ] && echo "$usage" && exit 1
+
+cd $PROJECTDIR/$PROJECT
+
+ansible-vault encrypt_string "$INPUT"
