@@ -8,7 +8,7 @@ This repo provides some tools I use to run Ansible scripts.
 * showansible: this script will encrypt values for use in the desired project
 * runansible: this script wraps ansible-playbook in some options I like to use
 * showansible: this script will retrieve variables from your inventory and show them on the commandline
-* update_checkout: also not specifically for Ansible, but will update a Git checkout and any submodules present
+* update_checkout: also not specifically for Ansible, but will update a Git checkout and any submodules present (note, will remove all untracked stuff as well)
 
 ## Setup retrieve_vault.sh
 The idea behind this script is to retrieve the GPG encrypted ansible-vault key
