@@ -30,7 +30,6 @@ while getopts "f:ihlp:" opt; do
       ;;
     i)
       MODE=inventory
-      INPUT='all'
       ;;
     p)
       PROJECT="$OPTARG"
@@ -44,6 +43,7 @@ done
 
 shift $[$OPTIND -1]
 [[ $INPUT == '' ]] && INPUT=$1
+[[ $INPUT == '' ]] && [[ $MODE == 'inventory' ]] && INPUT='all'
 shift 1
 
 [ -z "$PROJECT" ] || [ -z "$INPUT" ] && echo "$usage" && exit 1
