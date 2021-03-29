@@ -10,21 +10,41 @@ PROJECTDIR=/opt/ansible/projects
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-usage="Usage: $0 [-p project] value-to-encrypt
+usage="Usage: $0 [-p project] [-n name] [-r length] [-s] value-to-encrypt
 
     -p project   Name of the project to encrypt a value for
+    -n name      Name of the variable, optional
+    -r length    Use a randomly generated password, requires pwgen
+    -s           Generates a fully random password with symbols (see NOTE)
     -h           This text
 
 If the value-to-encrypt is not provided, the script will prompt for it.
+
+NOTE: The  pwgen  program  generates passwords which are designed to be easily
+memorized by humans, while being as secure as possible. Passwords generated with
+-s are not human-friendly (but can contain illegal symbols depending on the software
+that uses it).
 "
 
 FILE=''
 MODE=var
+PWGEN=false
+PWGEN_OPTS=''
 
-while getopts "hp:" opt; do
+while getopts "hn:p:r:s" opt; do
   case ${opt} in
     p)
-      PROJECT="$OPTARG"
+      PROJECT="${OPTARG}"
+      ;;
+    n)
+      VARNAME="${OPTARG}"
+      ;;
+    r)
+      PWGEN=true
+      PWGEN_LENGTH="${OPTARG}"
+      ;;
+    s)
+      PWGEN_OPTS='-s -y'
       ;;
     h)
       echo -e "$usage"
@@ -36,6 +56,8 @@ done
 shift $[$OPTIND -1]
 INPUT="$@"
 
+[ $PWGEN ] && INPUT=$(pwgen $PWGEN_OPTS $PWGEN_LENGTH 1)
+
 [ -z "$INPUT" ] && while read -rp $'Type the value to be encrypted. Then press ENTER to continue: \n' i
 do
   INPUT="$i"
@@ -46,4 +68,6 @@ done
 
 cd $PROJECTDIR/$PROJECT
 
+[ $PWGEN ] && echo -e "Generated password: $INPUT \n"
+[ -n "$VARNAME" ] && echo -n "$VARNAME: "
 ansible-vault encrypt_string "$INPUT"
