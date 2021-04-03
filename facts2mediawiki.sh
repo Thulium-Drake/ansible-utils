@@ -79,6 +79,7 @@ EOF
   This page is generated automatically, edits will be lost.
 [[Category: Systems]]
 [[Category: ${HOST_DISTRO}-${ACTIVE}]]
+[[Category: ${ACTIVE}]]
 [[Category: ${HOST_DISTRO}]]
 [[Category: ${HOST_DISTRO}-${HOST_DISTRO_MAJOR}]]
 [[Category: ${HOST_ARCH}]]
@@ -98,9 +99,31 @@ At the bottom of this page is an overview per OS using categories.
 [[Category: Unknown]]
 [[Category: x86_64]]
 [[Category: i386]]
+[[Category: Active]]
+[[Category: Stale]]
 $(for DISTRO in $(cat /tmp/distrolist.wiki | sort -u)
 do
   echo \[\[Category:$DISTRO\]\]
+done)
+EOF
+
+cat <<EOF >/tmp/Category:Stale.wiki
+ WARNING: These pages are generated automatically!
+
+The systems on this page have not been inventoried by Ansible in the last 14 days and may no longer be active.
+$(for DISTRO in $(cat /tmp/distrolist.wiki | sort -u)
+do
+  echo \[\[Category:${DISTRO}-Stale\]\]
+done)
+EOF
+
+cat <<EOF >/tmp/Category:Active.wiki
+ WARNING: These pages are generated automatically!
+
+The systems on this page have been inventoried by Ansible in the last 14 days.
+$(for DISTRO in $(cat /tmp/distrolist.wiki | sort -u)
+do
+  echo \[\[Category:${DISTRO}-Active\]\]
 done)
 EOF
 
