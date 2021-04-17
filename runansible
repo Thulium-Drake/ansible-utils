@@ -95,4 +95,4 @@ $UPDATE_ROLES && {
   }
 }
 
-ansible-playbook $INVENTORY -e ara_playbook_name="$PROJECT - $PLAYBOOK" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
+ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
