@@ -89,8 +89,8 @@ then
       ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1
       $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
     else
-      ansible-galaxy install -fr roles/requirements.yml
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml
+      ansible-galaxy install -fr roles/requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   else
     if $SPARSE
@@ -98,10 +98,11 @@ then
       ansible-galaxy install -fr requirements.yml >/dev/null 2>&1
       $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
     else
-      ansible-galaxy install -fr requirements.yml
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml
+      ansible-galaxy install -fr requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   fi
 fi
+exit 0
 
 ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
