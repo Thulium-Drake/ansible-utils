@@ -70,29 +70,38 @@ shift 1
 cd $PROJECTDIR/$PROJECT
 
 # check for update_checkout and use that if it's present
-$UPDATE_GIT && {
-  [[ -x scripts/update_checkout.sh ]] && scripts/update_checkout.sh > /dev/null 2>&1 ||
-  git pull >/dev/null 2>&1
-}
+if $UPDATE_GIT
+then
+  if [ -x scripts/update_checkout.sh ]
+  then
+    scripts/update_checkout.sh > /dev/null 2>&1
+  else
+    git pull >/dev/null 2>&1
+  fi
+fi
 
-$UPDATE_ROLES && {
-  [[ -f roles/requirements.yml ]] && {
-    $SPARSE && {
+if $UPDATE_ROLES
+then
+  if [ -f roles/requirements.yml ]
+  then
+    if $SPARSE
+    then
       ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1
       $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
-    } || {
+    else
       ansible-galaxy install -fr roles/requirements.yml
       $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml
-  }
-  } || {
-    $SPARSE && {
+    fi
+  else
+    if $SPARSE
+    then
       ansible-galaxy install -fr requirements.yml >/dev/null 2>&1
       $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
-    } || {
+    else
       ansible-galaxy install -fr requirements.yml
       $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml
-    }
-  }
-}
+    fi
+  fi
+fi
 
 ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
