@@ -56,7 +56,7 @@ done
 shift $[$OPTIND -1]
 INPUT="$@"
 
-[ $PWGEN ] && INPUT=$(pwgen $PWGEN_OPTS $PWGEN_LENGTH 1)
+$PWGEN && INPUT=$(pwgen $PWGEN_OPTS $PWGEN_LENGTH 1)
 
 [ -z "$INPUT" ] && while read -rp $'Type the value to be encrypted. Then press ENTER to continue: \n' i
 do
@@ -68,6 +68,6 @@ done
 
 cd $PROJECTDIR/$PROJECT
 
-[ $PWGEN ] && echo -e "Generated password: $INPUT \n"
+$PWGEN && echo -e "Generated password: $INPUT \n"
 [ -n "$VARNAME" ] && echo -n "$VARNAME: "
 ansible-vault encrypt_string "$INPUT"
