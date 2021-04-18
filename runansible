@@ -103,6 +103,5 @@ then
     fi
   fi
 fi
-exit 0
 
 ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
