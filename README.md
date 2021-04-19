@@ -54,16 +54,22 @@ ln -s /path/to/repo/runansible /usr/local/bin
 * You can now use it to run your playbook runs!
 
 ```
-runansible -h
-
 Usage: /usr/local/bin/runansible [-p project] [-i inventory] [-s] playbook.yml
 
+    -b branch    Run on specific git branch
+                 When using this option, the script will check out the specified
+                 git branch, run Ansible and then check out master
     -g           Update git checkout before running
+    -l           Ignore locks and allow for multiple instances of runansible
     -p project   Name of the project to run the playbook from
     -i project   Name of the inventory to use, can be provided multiple times
     -r           Update roles before running playbook
+    -R           Update roles before running playbook (compatible with 2.9)
     -s           Make Ansible's output sparse
     -h           This text
+
+By default, this script will attempt to exclusively lock the playbook that is executed.
+This is to prevent multiple runs of the same playbook at once.
 ```
 
 # facts2mediawiki.sh
