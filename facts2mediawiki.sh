@@ -5,6 +5,15 @@
 #ANSIBLE_DIR="/opt/ansible/projects/myproject"
 #FACTS_CACHE="$ANSIBLE_DIR/cache"
 #MAIN_PLAYBOOK="main.yml"
+#
+# ARA reporting settings
+#ARA_SERVER=https://ara.example.nl
+# How many hosts to show
+#LIMIT=20
+# Extra options required for ARA api client
+#ARA_OPTIONS='--insecure' # Run `ara host list help` for more information
+#
+# MediaWiki settings
 # for direct use with Mediawiki
 #WIKI="root@wiki"
 # Copy the files to your docker volume for processing.
@@ -126,6 +135,22 @@ do
   echo \[\[Category:${DISTRO}-Active\]\]
 done)
 EOF
+
+# ARA report generation
+ARA_OPTS="--server $ARA_SERVER --client http $ARA_OPTIONS"
+cat <<EOF >/tmp/REP:Ansible_changed_systems.wiki
+ WARNING: This page is generated automatically!
+
+The following list are the most recent $LIMIT systems that have had changes in their Ansible runs
+
+{| class="wikitable"
+! Date !! Hostname !! Link to report
+EOF
+ara host list $ARA_OPTS --with-changed -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&changed=true#results ARA]\n", $4, $2, ara, $1, $3) }' >> /tmp/REP:Ansible_changed_systems.wiki
+
+echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
+
 
 sed -i 's/"//g' /tmp/*.wiki
 
