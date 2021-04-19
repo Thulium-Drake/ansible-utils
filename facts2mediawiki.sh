@@ -147,7 +147,7 @@ The following list are the most recent $LIMIT systems that have had changes in t
 ! Date !! Hostname !! Link to report
 EOF
 ara host list $ARA_OPTS --with-changed -c name -c playbook -c id -c updated --limit $LIMIT -f value |
-awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&changed=true#results ARA]\n", $4, $2, ara, $1, $3) }' >> /tmp/REP:Ansible_changed_systems.wiki
+awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&changed=true#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
 
 echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
