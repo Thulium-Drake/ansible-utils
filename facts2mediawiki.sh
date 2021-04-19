@@ -143,12 +143,39 @@ cat <<EOF >/tmp/REP:Ansible_changed_systems.wiki
 
 The following list are the most recent $LIMIT systems that have had changes in their Ansible runs
 
+== Changed hosts ==
 {| class="wikitable"
 ! Date !! Hostname !! Link to report
 EOF
 ara host list $ARA_OPTS --with-changed -c name -c playbook -c id -c updated --limit $LIMIT -f value |
 awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&changed=true#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
+echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
+cat <<EOF >>/tmp/REP:Ansible_changed_systems.wiki
+
+== Failed hosts ==
+The following list are the most recent $LIMIT systems that have had errors in their Ansible runs
+
+{| class="wikitable"
+! Date !! Hostname !! Link to report
+EOF
+
+
+ara host list $ARA_OPTS --with-failed --without-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&status=failed#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
+echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
+
+cat <<EOF >>/tmp/REP:Ansible_changed_systems.wiki
+
+== Unreachable hosts ==
+The following list are the most recent $LIMIT systems that have been unreachable for their Ansible runs
+
+{| class="wikitable"
+! Date !! Hostname !! Link to report
+EOF
+
+ara host list $ARA_OPTS --without-failed --with-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&status=unreachable#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
 echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
 
