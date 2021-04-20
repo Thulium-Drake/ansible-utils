@@ -147,7 +147,7 @@ The following list are the most recent $LIMIT systems that have had changes in t
 {| class="wikitable"
 ! Date !! Hostname !! Link to report
 EOF
-ara host list $ARA_OPTS --with-changed -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+/usr/local/bin/ara host list $ARA_OPTS --with-changed -c name -c playbook -c id -c updated --limit $LIMIT -f value |
 awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&changed=true#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
 echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
@@ -161,7 +161,7 @@ The following list are the most recent $LIMIT systems that have had errors in th
 EOF
 
 
-ara host list $ARA_OPTS --with-failed --without-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+/usr/local/bin/ara host list $ARA_OPTS --with-failed --without-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
 awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&status=failed#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
 echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
@@ -174,7 +174,7 @@ The following list are the most recent $LIMIT systems that have been unreachable
 ! Date !! Hostname !! Link to report
 EOF
 
-ara host list $ARA_OPTS --without-failed --with-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
+/usr/local/bin/ara host list $ARA_OPTS --without-failed --with-unreachable -c name -c playbook -c id -c updated --limit $LIMIT -f value |
 awk -v ara="$ARA_SERVER" '{ printf("|- \n| %s || %s || [%s/playbooks/%s.html?host=%s&status=unreachable#results ARA]\n", $4, $2, ara, $3, $1) }' >> /tmp/REP:Ansible_changed_systems.wiki
 echo '|}' >> /tmp/REP:Ansible_changed_systems.wiki
 
