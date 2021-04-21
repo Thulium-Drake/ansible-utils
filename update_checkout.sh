@@ -3,6 +3,8 @@
 #
 # This script will update the current git checkout and it's submodules
 #
+# It will not remove files/directories put in .gitignore
+#
 # Run in cron for the best results
 GITREPO="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -10,12 +12,18 @@ GITREPO="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # in the Git root
 cd $GITREPO/..
 
-# Reset entire repo and update
+# If passed, set branch
+BRANCH=$1
+
+# Reset current working dir to prevent issues when switching branches
 git reset --hard HEAD
 git clean -f -d -q
-git checkout master
-git fetch origin master
-git reset --hard origin/master
+# Go to desired branch and also reset that
+git checkout ${BRANCH:"master"}
+git reset --hard HEAD
+git clean -f -d -q
+
+# Update code
 git pull
 git submodule update
 git submodule update --init --recursive

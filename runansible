@@ -39,6 +39,8 @@ By default, this script will attempt to exclusively lock the playbook that is ex
 This is to prevent multiple runs of the same playbook at once.
 "
 
+BRANCH=$DEFAULT_BRANCH
+
 while getopts "b:glhi:p:srR" opt; do
   case ${opt} in
     b)
@@ -89,7 +91,7 @@ if $UPDATE_GIT
 then
   if [ -x scripts/update_checkout.sh ]
   then
-    scripts/update_checkout.sh > /dev/null 2>&1
+    scripts/update_checkout.sh $BRANCH > /dev/null 2>&1
   else
     git pull >/dev/null 2>&1
   fi
