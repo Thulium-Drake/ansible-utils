@@ -121,7 +121,7 @@ then
   fi
 fi
 
-LOCK_CMD="flock -w 5 -x -E 66 $PLAYBOOKDIR/$PLAYBOOK "
+LOCK_CMD="flock -n -x -E 66 $PLAYBOOKDIR/$PLAYBOOK "
 if $IGNORE_LOCK
 then
   echo "WARNING: Ignoring locking and starting concurrent run
@@ -131,10 +131,7 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-if [ -n "$BRANCH" ]
-then
-  git checkout $BRANCH
-fi
+git checkout $BRANCH >/dev/null 2>&1
 
 $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 
@@ -147,7 +144,4 @@ then
 Please try again later..."
 fi
 
-if [ -n "$BRANCH" ]
-then
-  git checkout $DEFAULT_BRANCH
-fi
+git checkout $DEFAULT_BRANCH >/dev/null 2>&1
