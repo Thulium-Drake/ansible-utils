@@ -56,18 +56,42 @@ done
 shift $[$OPTIND -1]
 INPUT="$@"
 
-$PWGEN && INPUT=$(pwgen $PWGEN_OPTS $PWGEN_LENGTH 1)
+if $PWGEN
+then
+  INPUT=$(pwgen $PWGEN_OPTS $PWGEN_LENGTH 1)
+fi
 
-[ -z "$INPUT" ] && while read -rp $'Type the value to be encrypted. Then press ENTER to continue: \n' i
-do
-  INPUT="$i"
-  [ -n "$INPUT" ] && break
-done
+if [ -z "$INPUT" ]
+then
+  echo 'Type the value to be encrypted, end with an empty line:'
+  while read i
+  do
+    if [ -z "$i" ]
+    then
+      INPUT=$(echo -e "$INPUT" | sed '/^[[:space:]]*$/d')
+      break
+    fi
+    INPUT+="$i\n"
+  done
+fi
 
-[ -z "$PROJECT" ] && echo "$usage" && exit 1
+if [ -z "$PROJECT" ]
+then
+  echo "$usage"
+  exit 1
+fi
 
 cd $PROJECTDIR/$PROJECT
 
-$PWGEN && echo -e "Generated password: $INPUT \n"
-[ -n "$VARNAME" ] && echo -n "$VARNAME: "
+if $PWGEN
+then
+  echo -e "Generated password: $INPUT \n"
+fi
+
+if [ -n "$VARNAME" ]
+then
+  echo -n "$VARNAME: "
+fi
+
+
 ansible-vault encrypt_string "$INPUT"
