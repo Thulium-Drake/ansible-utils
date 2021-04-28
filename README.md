@@ -33,12 +33,13 @@ echo 'secretkey' | gpg -r me@example.com -e > /opt/ansible/vaults/myproject.gpg
 cd /opt/ansible/projects/myproject
 do_stuff
 ```
-* Set vault_password_file to .ansible-vault
 * Symlink the script into your project
 
 ```
 ln -s /opt/ansible/vaults/retrieve_vault.sh /opt/ansible/projects/myproject/.ansible-vault
 ```
+
+Whenever you run one of the scripts that uses the Ansible Vault password file, they will set the ```ANSIBLE_VAULT_PASSWORD_FILE``` environment variable. In order to be compatible with Ansible Tower / AWX, you _cannot_ set ```vault_password_file``` in ```ansible.cfg``` as this will break Tower's ability to decrypt Vault secrets
 
 If your GPG agent is set up, once Ansible wants to access a vault secret now, you will be asked for the
 GPG passphrase.

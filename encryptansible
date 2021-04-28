@@ -6,9 +6,12 @@
 
 # Defaults
 PROJECTDIR=/opt/ansible/projects
+ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
+
+export ANSIBLE_VAULT_PASSWORD_FILE
 
 usage="Usage: $0 [-p project] [-n name] [-r length] [-s] value-to-encrypt
 
