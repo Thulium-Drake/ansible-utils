@@ -5,6 +5,7 @@
 #ANSIBLE_DIR="/opt/ansible/projects/myproject"
 #FACTS_CACHE="$ANSIBLE_DIR/cache"
 #MAIN_PLAYBOOK="main.yml"
+#ANSIBLE_VAULT_PASSWORD_FILE=".ansible-vault"
 #
 # ARA reporting settings
 #ARA_SERVER=https://ara.example.nl
@@ -22,6 +23,8 @@
 #DOCKER_STORAGE="root@docker:/some/docker/volume"
 
 . /opt/ansible/facts2mediawiki.conf
+
+export ANSIBLE_VAULT_PASSWORD_FILE
 
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
