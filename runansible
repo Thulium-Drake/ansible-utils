@@ -22,8 +22,6 @@ ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-export ANSIBLE_VAULT_PASSWORD_FILE
-
 usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
 
     -b branch    Run on specific git branch
@@ -88,6 +86,8 @@ shift 1
 [ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && echo "$usage" && exit 1
 
 cd $PROJECTDIR/$PROJECT
+
+test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
 # check for update_checkout and use that if it's present
 if $UPDATE_GIT
