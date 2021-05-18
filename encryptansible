@@ -16,6 +16,7 @@ export ANSIBLE_VAULT_PASSWORD_FILE
 usage="Usage: $0 [-p project] [-n name] [-r length] [-s] value-to-encrypt
 
     -p project   Name of the project to encrypt a value for
+    -f           Instead of a value, encrypt this file
     -n name      Name of the variable, optional
     -r length    Use a randomly generated password, requires pwgen
     -s           Generates a fully random password with symbols (see NOTE)
@@ -29,13 +30,18 @@ memorized by humans, while being as secure as possible. Passwords generated with
 that uses it).
 "
 
-FILE=''
+FILE=false
 MODE=var
 PWGEN=false
 PWGEN_OPTS=''
+VAULT_MODE='encrypt_string'
 
-while getopts "hn:p:r:s" opt; do
+while getopts "fhn:p:r:s" opt; do
   case ${opt} in
+    f)
+      FILE=true
+      VAULT_MODE='encrypt'
+      ;;
     p)
       PROJECT="${OPTARG}"
       ;;
@@ -58,6 +64,11 @@ done
 
 shift $[$OPTIND -1]
 INPUT="$@"
+
+if $FILE && [ -f "$INPUT" ]
+then
+  INPUT=$(realpath "$INPUT")
+fi
 
 if $PWGEN
 then
@@ -84,8 +95,6 @@ then
   exit 1
 fi
 
-cd $PROJECTDIR/$PROJECT
-
 if $PWGEN
 then
   echo -e "Generated password: $INPUT \n"
@@ -96,5 +105,6 @@ then
   echo -n "$VARNAME: "
 fi
 
+cd $PROJECTDIR/$PROJECT
 
-ansible-vault encrypt_string "$INPUT"
+ansible-vault $VAULT_MODE "$INPUT"
