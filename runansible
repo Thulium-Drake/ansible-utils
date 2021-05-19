@@ -13,6 +13,7 @@ PLAYBOOKDIR=playbooks
 UPDATE_ROLES=false
 OLD_ANSIBLE=false
 UPDATE_GIT=false
+SWITCH_BRANCHES=false
 IGNORE_LOCK=false
 SPARSE=false
 INVENTORY=""
@@ -46,6 +47,7 @@ while getopts "b:glhi:p:srR" opt; do
   case ${opt} in
     b)
       BRANCH="$OPTARG"
+      SWITCH_BRANCHES=true
       ;;
     g)
       UPDATE_GIT=true
@@ -92,6 +94,10 @@ test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 # check for update_checkout and use that if it's present
 if $UPDATE_GIT
 then
+  if ! $SWITCH_BRANCHES
+  then
+    unset BRANCH
+  fi
   if [ -x scripts/update_checkout.sh ]
   then
     scripts/update_checkout.sh $BRANCH > /dev/null 2>&1
@@ -134,7 +140,10 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-git checkout $BRANCH >/dev/null 2>&1
+if $SWITCH_BRANCHES
+then
+  git checkout $BRANCH >/dev/null 2>&1
+fi
 
 $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 
@@ -147,4 +156,7 @@ then
 Please try again later..."
 fi
 
-git checkout $DEFAULT_BRANCH >/dev/null 2>&1
+if $SWITCH_BRANCHES
+then
+  git checkout $DEFAULT_BRANCH >/dev/null 2>&1
+fi
