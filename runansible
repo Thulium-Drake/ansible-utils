@@ -23,7 +23,7 @@ ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml
+usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook args]
 
     -b branch    Run on specific git branch
                  When using this option, the script will check out the specified
@@ -130,6 +130,11 @@ then
   fi
 fi
 
+if $SWITCH_BRANCHES
+then
+  git checkout $BRANCH >/dev/null 2>&1
+fi
+
 LOCK_CMD="flock -n -x -E 66 $PLAYBOOKDIR/$PLAYBOOK "
 if $IGNORE_LOCK
 then
@@ -138,11 +143,6 @@ then
 Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 "
   LOCK_CMD=""
-fi
-
-if $SWITCH_BRANCHES
-then
-  git checkout $BRANCH >/dev/null 2>&1
 fi
 
 $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
