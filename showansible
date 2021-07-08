@@ -12,7 +12,7 @@ ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-export ANSIBLE_VAULT_PASSWORD_FILE
+test -f $PROJECTDIR/$ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
 usage="Usage: $0 [-p project] [-i] [-f file] variable|[group]
 
