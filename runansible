@@ -32,7 +32,7 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -l           Ignore locks and allow for multiple instances of $(basename $0)
     -p project   Name of the project to run the playbook from
     -i project   Name of the inventory to use, can be provided multiple times
-    -r           Update roles before running playbook
+    -r           Search for requirements.yml and update roles/collections
     -R           DEPRECATED: Update roles before running playbook (compatible with 2.9)
     -s           Make Ansible's output sparse
     -h           This text
@@ -118,24 +118,16 @@ then
     OLD_ANSIBLE=false
   fi
 
-  if [ -f roles/requirements.yml ]
+  REQUIREMENTS=$(find . -name requirements.yml -not -path './collections/*' -not -path './roles/*/*' -print | sed 's/^/-r /' | xargs)
+  if [ -n "$REQUIREMENTS" ]
   then
     if $SPARSE
     then
-      ansible-galaxy install -fr roles/requirements.yml >/dev/null 2>&1
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml >/dev/null 2>&1
+      ansible-galaxy install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
+      $OLD_ANSIBLE && ansible-galaxy collection install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
     else
-      ansible-galaxy install -fr roles/requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr roles/requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-    fi
-  else
-    if $SPARSE
-    then
-      ansible-galaxy install -fr requirements.yml >/dev/null 2>&1
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml >/dev/null 2>&1
-    else
-      ansible-galaxy install -fr requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-      $OLD_ANSIBLE && ansible-galaxy collection install -fr requirements.yml | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      ansible-galaxy install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy collection install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   fi
 fi
