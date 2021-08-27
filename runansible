@@ -147,7 +147,7 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-$LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
+$LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 
 if [ $? -eq 66 ]
 then
