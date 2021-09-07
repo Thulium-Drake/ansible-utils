@@ -91,7 +91,19 @@ shift 1
 
 [ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && echo "$usage" && exit 1
 
+if [ ! -d "$PROJECTDIR/$PROJECT" ]
+then
+  echo "ERROR: Project does not exist!"
+  exit 1
+fi
+
 cd $PROJECTDIR/$PROJECT
+
+if [ ! -f "$PLAYBOOKDIR/$PLAYBOOK" ]
+then
+  echo "ERROR: Playbook does not exist!"
+  exit 1
+fi
 
 test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
