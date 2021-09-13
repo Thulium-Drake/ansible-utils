@@ -7,18 +7,25 @@
 # Defaults
 PROJECTDIR=/opt/ansible/projects
 INVENTORYDIR=inventory
+FILESDIR=files
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-usage="Usage: $0 [-p project] [-i] [-f file] variable|[group]
+usage="Usage: $0 [-p project] [-i] [-f file] variable|file|[group]
 
     -f file      Which vars file (which vars file to use, e.g. database_servers.yml)
     -p project   Name of the project to retrieve data from
     -i           Inventory mode, show groups instead of variables,
                  if no group is supplied, 'all' is used
     -h           This text
+
+When the input variable is a filename (NOTE: do not put in full paths!) the
+script will render the contents of the file. If multiple files with the same name
+exist, the script will prompt which one to use.
+
+NOTE: This is different then using -f, as that is meant to select which vars file to read!
 "
 
 FILE=''
@@ -55,7 +62,31 @@ test -f $PROJECTDIR/$PROJECT/$ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAUL
 
 [[ "$FILE" != '' ]] && FILE="-e @$(find $INVENTORYDIR -name $FILE | tail -1)"
 
+mapfile -d $'\0' POSSIBLE_INPUTS < <(find -L $PROJECTDIR/$PROJECT/$FILESDIR -name $INPUT -print0)
+
+if [ ${#POSSIBLE_INPUTS[@]} -ne 0 ]
+then
+  MODE=file
+  if [ ${#POSSIBLE_INPUTS[@]} -ge 2 ]
+  then
+    echo -e "Multiple matching files found, please select a file:\n"
+    for i in $(seq ${#POSSIBLE_INPUTS[@]})
+    do
+      echo "$i) ${POSSIBLE_INPUTS[i-1]}"
+    done
+    echo ""
+    read -p "Select file: " INPUT_NUM
+
+    INPUT=${POSSIBLE_INPUTS[INPUT_NUM-1]}
+  else
+    INPUT=${POSSIBLE_INPUTS[0]}
+  fi
+fi
+
 case "$MODE" in
+  file)
+    ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}"
+    ;;
   var)
     ansible -i /dev/null localhost -m debug -a var=$INPUT $FILE
     ;;
