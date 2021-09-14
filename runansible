@@ -28,6 +28,8 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -b branch    Run on specific git branch
                  When using this option, the script will check out the specified
                  git branch, run Ansible and then check out $DEFAULT_BRANCH
+    -c           Tell ansible-galaxy to ignore SSL errors when downloading
+                 roles/collections
     -g           Update git checkout before running
     -l           Ignore locks and allow for multiple instances of $(basename $0)
     -p project   Name of the project to run the playbook from
@@ -46,12 +48,16 @@ a future version.
 "
 
 BRANCH=$DEFAULT_BRANCH
+GALAXY_OPTS=''
 
 while getopts "b:glhi:p:srR" opt; do
   case ${opt} in
     b)
       BRANCH="$OPTARG"
       SWITCH_BRANCHES=true
+      ;;
+    c)
+      GALAXY_OPTS='-c'
       ;;
     g)
       UPDATE_GIT=true
@@ -135,11 +141,11 @@ then
   then
     if $SPARSE
     then
-      ansible-galaxy install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
-      $OLD_ANSIBLE && ansible-galaxy collection install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
+      ansible-galaxy $GALAXY_OPTS install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
+      $OLD_ANSIBLE && ansible-galaxy $GALAXY_OPTS collection install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
     else
-      ansible-galaxy install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-      $OLD_ANSIBLE && ansible-galaxy collection install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      ansible-galaxy $GALAXY_OPTS install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy $GALAXY_OPTS collection install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   fi
 fi
