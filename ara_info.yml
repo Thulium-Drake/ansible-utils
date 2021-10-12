@@ -1,0 +1,46 @@
+---
+- name: 'Collect and upload information to ARA'
+  hosts: 'localhost'
+  gather_facts: false
+  tasks:
+    - name: 'Collect information for ARA'
+      delegate_to: 'localhost'
+      run_once: true
+      block:
+        - name: 'Collect Ansible Role versions'
+          shell: |
+            cd {{ ara_playbook_dir }}/..
+            ansible-galaxy list
+          register: 'ansible_role_versions'
+          changed_when: false
+
+        - name: 'Record in ARA'
+          ara_record:
+            key: 'ansible_role_versions'
+            value: "{{ ansible_role_versions['stdout'] }}"
+
+        - name: 'Collect git repo version'
+          command: git log -1
+          register: 'git_version'
+          changed_when: false
+
+        - name: 'Record in ARA'
+          ara_record:
+            key: 'git_version'
+            value: "{{ git_version['stdout'] }}"
+
+        - name: 'Collect git status'
+          shell: |
+            cd {{ ara_playbook_dir }}/..
+            echo "Untracked and modified files:"
+            git status -s
+            echo ""
+            echo "Diffstat with HEAD for modified files:"
+            git diff --stat HEAD
+          register: 'git_status'
+          changed_when: false
+
+        - name: 'Record in ARA'
+          ara_record:
+            key: 'git_status'
+            value: "{{ git_status['stdout'] }}"

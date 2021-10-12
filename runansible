@@ -4,6 +4,9 @@
 # Add ARA to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
 
+# Set ANSIBLEUTILSDIR
+ANSIBLEUTILSDIR="$(dirname `readlink -f $0`)"
+
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
@@ -16,6 +19,7 @@ UPDATE_GIT=false
 SWITCH_BRANCHES=false
 IGNORE_LOCK=false
 SPARSE=false
+EXTENDED_ARA_INFO=true
 INVENTORY=""
 DEFAULT_BRANCH=master
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
@@ -25,6 +29,8 @@ test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
 usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook args]
 
+    -A           Disable detailed ARA logging, this will create a temporary playbook file with
+                 the contents of the ara_info.yml playbook of Ansible Utils.
     -b branch    Run on specific git branch
                  When using this option, the script will check out the specified
                  git branch, run Ansible and then check out $DEFAULT_BRANCH
@@ -50,8 +56,11 @@ a future version.
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "b:glhi:p:srR" opt; do
+while getopts "Ab:glhi:p:srR" opt; do
   case ${opt} in
+    A)
+      EXTENDED_ARA_INFO=false
+      ;;
     b)
       BRANCH="$OPTARG"
       SWITCH_BRANCHES=true
@@ -165,7 +174,17 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-$LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
+if $EXTENDED_ARA_INFO
+then
+  # Generate temporary ephemeral playbook and execute it
+  cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK > $PLAYBOOKDIR/.$$.$PLAYBOOK
+  sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
+  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  rm $PLAYBOOKDIR/.$$.$PLAYBOOK
+else
+  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK "$@"
+fi
+
 
 if [ $? -eq 66 ]
 then
