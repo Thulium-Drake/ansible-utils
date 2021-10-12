@@ -19,7 +19,7 @@ UPDATE_GIT=false
 SWITCH_BRANCHES=false
 IGNORE_LOCK=false
 SPARSE=false
-EXTENDED_ARA_INFO=true
+DISABLE_EXTENDED_ARA_INFO=false
 INVENTORY=""
 DEFAULT_BRANCH=master
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
@@ -59,7 +59,7 @@ GALAXY_OPTS=''
 while getopts "Ab:glhi:p:srR" opt; do
   case ${opt} in
     A)
-      EXTENDED_ARA_INFO=false
+      DISABLE_EXTENDED_ARA_INFO=false
       ;;
     b)
       BRANCH="$OPTARG"
@@ -174,7 +174,7 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-if $EXTENDED_ARA_INFO
+if ! $DISABLED_EXTENDED_ARA_INFO
 then
   # Generate temporary ephemeral playbook and execute it
   cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK > $PLAYBOOKDIR/.$$.$PLAYBOOK
