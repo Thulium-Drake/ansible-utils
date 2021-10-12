@@ -182,7 +182,7 @@ then
   $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
   rm $PLAYBOOKDIR/.$$.$PLAYBOOK
 else
-  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK "$@"
+  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 fi
 
 
