@@ -5,7 +5,7 @@
 export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
 
 # Set ANSIBLEUTILSDIR
-ANSIBLEUTILSDIR="$(dirname `readlink -f $0`)"
+ANSIBLEUTILSDIR="$(dirname `readlink -f $(which $0)`)"
 
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
