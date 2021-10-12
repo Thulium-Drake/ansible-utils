@@ -12,6 +12,8 @@
             cd {{ ara_playbook_dir }}/..
             ansible-galaxy list
           register: 'ansible_role_versions'
+          environment:
+            PATH: '$PATH:/usr/local/bin'
           changed_when: false
 
         - name: 'Record in ARA'
