@@ -174,7 +174,7 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
-if ! $DISABLED_EXTENDED_ARA_INFO
+if ! $DISABLE_EXTENDED_ARA_INFO
 then
   # Generate temporary ephemeral playbook and execute it
   cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK > $PLAYBOOKDIR/.$$.$PLAYBOOK
