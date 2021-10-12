@@ -1,6 +1,6 @@
 ---
 - name: 'Collect and upload information to ARA'
-  hosts: 'localhost'
+  hosts: 'all'
   gather_facts: false
   tasks:
     - name: 'Collect information for ARA'
