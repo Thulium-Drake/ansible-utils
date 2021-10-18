@@ -85,7 +85,7 @@ fi
 
 case "$MODE" in
   file)
-    ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}"
+    ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}" | cut -d\> -f2 | jq -r .msg
     ;;
   var)
     ansible -i /dev/null localhost -m debug -a var=$INPUT $FILE
