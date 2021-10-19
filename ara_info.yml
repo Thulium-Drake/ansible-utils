@@ -20,6 +20,7 @@
           ara_record:
             key: 'ansible_role_versions'
             value: "{{ ansible_role_versions['stdout'] }}"
+          changed_when: false
 
         - name: 'Collect git repo version'
           command: git log -1
@@ -30,6 +31,7 @@
           ara_record:
             key: 'git_version'
             value: "{{ git_version['stdout'] }}"
+          changed_when: false
 
         - name: 'Collect git status'
           shell: |
@@ -46,3 +48,4 @@
           ara_record:
             key: 'git_status'
             value: "{{ git_status['stdout'] }}"
+          changed_when: false
