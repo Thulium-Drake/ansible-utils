@@ -59,7 +59,7 @@ GALAXY_OPTS=''
 while getopts "Ab:glhi:p:srR" opt; do
   case ${opt} in
     A)
-      DISABLE_EXTENDED_ARA_INFO=false
+      DISABLE_EXTENDED_ARA_INFO=true
       ;;
     b)
       BRANCH="$OPTARG"
