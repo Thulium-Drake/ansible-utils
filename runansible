@@ -131,9 +131,19 @@ then
   fi
   if [ -x scripts/update_checkout.sh ]
   then
-    scripts/update_checkout.sh $BRANCH > /dev/null 2>&1
+    if $SPARSE
+    then
+      scripts/update_checkout.sh $BRANCH > /dev/null 2>&1
+    else
+      scripts/update_checkout.sh $BRANCH
+    fi
   else
-    git pull >/dev/null 2>&1
+    if $SPARSE
+    then
+      git pull >/dev/null 2>&1
+    else
+      git pull
+    fi
   fi
 fi
 
