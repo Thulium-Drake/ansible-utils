@@ -12,15 +12,24 @@ GITREPO="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # in the Git root
 cd $GITREPO/..
 
-# If passed, set branch
-BRANCH=$1
+# If passed, set branch and origin
+INPUT=$1
+ORIGIN=${INPUT%%/*}
+BRANCH=${INPUT##*/}
+
+# If there's no origin in the input, assume defaults
+if [ "$ORIGIN" == "$BRANCH" ]
+then
+  unset ORIGIN
+fi
 
 # Reset current working dir to prevent issues when switching branches
-git reset --hard HEAD
+CUR_BRANCH=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/')
+git reset --hard ${ORIGIN:"origin"}/$CUR_BRANCH
 git clean -f -d -q
 # Go to desired branch and also reset that
 git checkout ${BRANCH:"master"}
-git reset --hard HEAD
+git reset --hard ${ORIGIN:"origin"}/$BRANCH
 git clean -f -d -q
 
 # Update code
