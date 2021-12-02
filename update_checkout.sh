@@ -29,7 +29,7 @@ git reset --hard ${ORIGIN:"origin"}/$CUR_BRANCH
 git clean -f -d -q
 # Go to desired branch and also reset that
 git checkout ${BRANCH:"master"}
-git reset --hard ${ORIGIN:"origin"}/$BRANCH
+git reset --hard ${ORIGIN:"origin"}/${BRANCH:"master"}
 git clean -f -d -q
 
 # Update code
