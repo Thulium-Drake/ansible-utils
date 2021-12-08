@@ -81,3 +81,10 @@ when you run Mediawiki in Docker, the pages can be copied to your docker server 
 processing by the container.
 
 This requires a docker image that periodically runs a script to import them.
+
+NOTE: For Mac users, readlink doesn't achieve the same functionality as on GNU/Linux. This might break the ```encryptansible``` script. A solution would be to use greadlink instead. To set this up, do the following:
+
+```
+brew install coreutils
+alias readlink=greadlink
+```
