@@ -29,8 +29,7 @@ test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
 usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook args]
 
-    -A           Disable detailed ARA logging, this will create a temporary playbook file with
-                 the contents of the ara_info.yml playbook of Ansible Utils.
+    -A           Disable ARA logging
     -b branch    Run on specific git branch
                  When using this option, the script will check out the specified
                  git branch, run Ansible and then check out $DEFAULT_BRANCH
@@ -41,16 +40,11 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -p project   Name of the project to run the playbook from
     -i project   Name of the inventory to use, can be provided multiple times
     -r           Search for requirements.yml and update roles/collections
-    -R           DEPRECATED: Update roles before running playbook (compatible with 2.9)
     -s           Make Ansible's output sparse
     -h           This text
 
 By default, this script will attempt to exclusively lock the playbook that is executed.
 This is to prevent multiple runs of the same playbook at once.
-
-When using -r/-R, this script will determine which version of Ansible is run (2.10 or greater)
-and adjust the procedure to update both roles and collections. The -R option will be removed in
-a future version.
 "
 
 BRANCH=$DEFAULT_BRANCH
@@ -60,6 +54,7 @@ while getopts "Ab:glhi:p:srR" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
+      ARA_API_SERVER=http://noara.example.com
       ;;
     b)
       BRANCH="$OPTARG"
@@ -87,10 +82,6 @@ while getopts "Ab:glhi:p:srR" opt; do
       export SPARSE=true
       ;;
     r)
-      UPDATE_ROLES=true
-      ;;
-    R)
-      echo "DEPRECATION WARNING: This option has been deprecated, please update your scripts!"
       UPDATE_ROLES=true
       ;;
     h)
