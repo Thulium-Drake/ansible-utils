@@ -16,6 +16,8 @@ test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 usage="Usage: $0 [-p project] [-i] [-f file] variable|file|[group]
 
     -f file      Which vars file (which vars file to use, e.g. database_servers.yml)
+                 Only required for files that do not reside inside
+                 <project>/inventory/group_vars
     -p project   Name of the project to retrieve data from
     -i           Inventory mode, show groups instead of variables,
                  if no group is supplied, 'all' is used
@@ -88,7 +90,23 @@ case "$MODE" in
     ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}" | cut -d\> -f2 | jq -r .msg
     ;;
   var)
-    ansible -i /dev/null localhost -m debug -a var=$INPUT $FILE
+    if [ $FILE == '' ]
+    then
+      TMP_INVENTORY=/tmp/.$$.inventory
+      echo localhost > $TMP_INVENTORY
+      for GROUP in $(ls $PROJECTDIR/$PROJECT/inventory/group_vars | cut -d. -f1)
+      do
+        echo "[${GROUP}]" >> $TMP_INVENTORY
+        echo "localhost" >> $TMP_INVENTORY
+      done
+    else
+      TMP_INVENTORY=/dev/null
+    fi
+    ansible -i $TMP_INVENTORY localhost -m debug -a var=$INPUT $FILE
+    if [ $FILE == '' ]
+    then
+      rm $TMP_INVENTORY
+    fi
     ;;
   inventory)
     ansible-inventory --graph $INPUT
