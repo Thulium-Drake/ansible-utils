@@ -6,6 +6,7 @@
     - name: 'Collect information for ARA'
       delegate_to: 'localhost'
       run_once: true
+      check_mode: true
       block:
         - name: 'Collect Ansible Role versions'
           shell: |
