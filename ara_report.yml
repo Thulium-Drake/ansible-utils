@@ -1,0 +1,48 @@
+---
+- name: 'Send ARA report'
+  hosts: 'all'
+  tasks:
+    - name: 'Generate report'
+      delegate_to: 'localhost'
+      run_once: true
+      check_mode: false
+      block:
+        - name: 'Get ARA playbook ID'
+          ara_playbook:
+          changed_when: false
+          register: 'ara_info'
+
+        - name: Recover base url from ara
+          set_fact:
+            ara_base_url: "{{ lookup('ara_api', '/api/') }}"
+          changed_when: false
+
+        - name: 'Generate report'
+          ansible.builtin.copy:
+            dest: "{{ ara_report_location }}"
+            mode: '0644'
+            content: |
+              Hi there,
+
+              The report for this run is available in ARA:
+
+              {{ ara_base_url['api'][0] | regex_replace('/api/v1/', '/playbooks') }}/{{ ara_info['playbook']['id'] }}.html
+
+              Cheers!
+
+              Ansible & ARA
+          changed_when: false
+
+        - name: 'Send email using mail'
+          ansible.builtin.shell: |
+            set -o pipefail
+            cat {{ ara_report_location }} | mail -s "Ansible run report: {{ ara_playbook_name }}" {{ ara_report_mail }}
+          args:
+            executable: '/bin/bash'
+          changed_when: false
+      rescue:
+        - name: 'Error generating ARA report'
+          ansible.builtin.debug:
+            msg: |
+              An error occurred when generating the report, either the ARA server was
+              unavailable during this time, or sending the email failed.

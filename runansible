@@ -23,6 +23,8 @@ DISABLE_EXTENDED_ARA_INFO=false
 INVENTORY=""
 DEFAULT_BRANCH=master
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
+ARA_MAIL=root@localhost
+SEND_MAIL=false
 
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
@@ -36,21 +38,25 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -c           Tell ansible-galaxy to ignore SSL errors when downloading
                  roles/collections
     -g           Update git checkout before running
+    -i file      Name of the inventory to use, can be provided multiple times
     -l           Ignore locks and allow for multiple instances of $(basename $0)
+    -m email     Send a e-mail with the ARA report to $ARA_MAIL
+                 This uses 'mail' on the Ansible controller to send the message
     -p project   Name of the project to run the playbook from
-    -i project   Name of the inventory to use, can be provided multiple times
     -r           Search for requirements.yml and update roles/collections
     -s           Make Ansible's output sparse
     -h           This text
 
 By default, this script will attempt to exclusively lock the playbook that is executed.
 This is to prevent multiple runs of the same playbook at once.
+
+NOTE: You can override the scripts default settings in ~/.runansible.conf
 "
 
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "Ab:glhi:p:srR" opt; do
+while getopts "Ab:glhi:mp:srR" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
@@ -66,14 +72,17 @@ while getopts "Ab:glhi:p:srR" opt; do
     g)
       UPDATE_GIT=true
       ;;
+    i)
+      INVENTORY="${INVENTORY} -i $OPTARG"
+      ;;
     l)
       IGNORE_LOCK=true
       ;;
+    m)
+      SEND_MAIL=true
+      ;;
     p)
       PROJECT="$OPTARG"
-      ;;
-    i)
-      INVENTORY="${INVENTORY} -i $OPTARG"
       ;;
     s)
       export ANSIBLE_DISPLAY_FAILED_STDERR=true
@@ -179,11 +188,15 @@ if ! $DISABLE_EXTENDED_ARA_INFO
 then
   # Generate temporary ephemeral playbook and execute it
   cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK > $PLAYBOOKDIR/.$$.$PLAYBOOK
+  if $SEND_MAIL
+  then
+    cat $ANSIBLEUTILSDIR/ara_report.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
+  fi
   sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
-  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  $LOCK_CMD ansible-playbook $INVENTORY -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
   rm $PLAYBOOKDIR/.$$.$PLAYBOOK
 else
-  $LOCK_CMD ansible-playbook $INVENTORY -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
+  $LOCK_CMD ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 fi
 
 
