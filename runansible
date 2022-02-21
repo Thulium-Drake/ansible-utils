@@ -56,7 +56,7 @@ NOTE: You can override the scripts default settings in ~/.runansible.conf
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "Ab:glhi:mp:srR" opt; do
+while getopts "Ab:cglhi:mp:srR" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
