@@ -1,6 +1,7 @@
 ---
 - name: 'Send ARA report'
   hosts: 'localhost'
+  gather_facts: false
   tasks:
     - name: 'Generate report'
       delegate_to: 'localhost'
