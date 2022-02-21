@@ -160,11 +160,11 @@ then
   then
     if $SPARSE
     then
-      ansible-galaxy $GALAXY_OPTS install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
-      $OLD_ANSIBLE && ansible-galaxy $GALAXY_OPTS collection install --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
+      ansible-galaxy install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
+      $OLD_ANSIBLE && ansible-galaxy collection install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
     else
-      ansible-galaxy $GALAXY_OPTS install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-      $OLD_ANSIBLE && ansible-galaxy $GALAXY_OPTS collection install --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      ansible-galaxy install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy collection install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   fi
 fi
