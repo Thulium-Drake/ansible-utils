@@ -90,7 +90,7 @@ case "$MODE" in
     ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}" | cut -d\> -f2 | jq -r .msg
     ;;
   var)
-    if [ $FILE == '' ]
+    if [ "$FILE" == '' ]
     then
       TMP_INVENTORY=/tmp/.$$.inventory
       echo localhost > $TMP_INVENTORY
