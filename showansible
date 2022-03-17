@@ -103,7 +103,7 @@ case "$MODE" in
       TMP_INVENTORY=/dev/null
     fi
     ansible -i $TMP_INVENTORY localhost -m debug -a var=$INPUT $FILE
-    if [ $FILE == '' ]
+    if [ "$FILE" == '' ]
     then
       rm $TMP_INVENTORY
     fi
