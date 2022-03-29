@@ -12,6 +12,7 @@
           shell: |
             cd {{ ara_playbook_dir }}/..
             ansible-galaxy list
+            ansible-galaxy collection list
           register: 'ansible_role_versions'
           environment:
             PATH: '/usr/local/bin:/usr/bin:/bin'
