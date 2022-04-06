@@ -2,6 +2,7 @@
 - name: 'Collect and upload information to ARA'
   hosts: 'localhost'
   gather_facts: false
+  become: false
   tasks:
     - name: 'Collect information for ARA'
       delegate_to: 'localhost'
