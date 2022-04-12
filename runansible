@@ -24,6 +24,7 @@ INVENTORY=""
 DEFAULT_BRANCH=master
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 ARA_MAIL=root@localhost
+ARA_REPORT_URL=""
 SEND_MAIL=false
 
 # Override any defaults that are set by the user
@@ -193,7 +194,7 @@ then
     cat $ANSIBLEUTILSDIR/ara_report.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
   fi
   sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
-  $LOCK_CMD ansible-playbook $INVENTORY -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  $LOCK_CMD ansible-playbook $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
   rm $PLAYBOOKDIR/.$$.$PLAYBOOK
 else
   $LOCK_CMD ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK "$@"

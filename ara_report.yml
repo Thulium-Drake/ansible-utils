@@ -28,7 +28,7 @@
 
               The report for this run is available in ARA:
 
-              {{ ara_base_url['api'][0] | regex_replace('/api/v1/', '/playbooks') }}/{{ ara_info['playbook']['id'] }}.html
+              {{ ara_report_url | default(ara_base_url['api'][0], true) | regex_replace('/api/v1/', '/playbooks') }}/{{ ara_info['playbook']['id'] }}.html
 
               Cheers!
 
