@@ -1,6 +1,6 @@
 ---
 - name: 'Send ARA report'
-  hosts: 'localhost'
+  hosts: 'all'
   gather_facts: false
   become: false
   tasks:
