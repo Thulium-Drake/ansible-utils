@@ -1,0 +1,57 @@
+---
+# This file can be used as a style reference for writing code
+# It is formatted as somewhat of an Ansible play
+#
+# Most of the style rules in this document are based the result of syntax highlighting.
+#
+# General rules when writing code
+# - Tasks and plays _must_ be named
+#   * The task name has a documentation function, use it as such!
+#   * Tasks names are strings as well, so quote them accordingly
+# - DoNotUseCamelCase, just_use_underscores
+# - Use logical and comprehensive names for playbooks, variables etc.
+#
+- name: 'Styleguide for Ansible'
+  styleguide:
+    strings: 'Strings should all be quoted'
+    variables: "{{ my_variable }}"
+    strings_with_variables: "When using {{ variables }}, it _must_ be quoted with double quotes"
+    numbers: 1234                               # NOTE: for filemodes, the leading 0 is mandatory to allow for Octals
+    booleans: true                              # not 'yes', 'no', 'True', '1' etc..
+    expressions: not boolean_value              # Expressions should be unquoted, however...
+    expressions: "'string' in list_variable"    # sometimes you can't do that due to the kind of logic you need
+
+- name: 'Whitespacing is good'
+  styleguide:
+    rules:
+      - 'Single line between tasks'
+      - 'No whitespace at the end of the playbook'
+      - 'Take care to not leave horizontal whitespace at the end of a line'
+      - "Tabs are bad, m'kay?"
+
+- name: 'Loops have changed a while ago'
+  styleguide:
+    name: "{{ my_loop_var }}"
+  loop:                                         # used to be with_items or something else
+    - 'first'
+    - 'second'
+    - 'third'
+  loop_control:
+    loop_var: 'my_loop_var'                     # This will prevent any and all collisions between multiple
+                                                # loops (you can also nest them now!)
+- name: 'Blocks can be done in one of 2 ways'
+  block:
+    - name: 'Where, if you need it, put the when: statement at the end'
+      task:
+        args: 'argument'
+  when: some_variable                           # Python is truthy, that means that if this var is true,
+                                                # it will evaluate as such.
+- name: 'Or like this'
+  when: some_variable > 8
+  block:
+    - name: 'This can be very useful for very large blocks'
+      task:
+        args: 'argument'
+    - name: 'Especially those that are larger then, say 34 lines (which is about the average size of a terminal)'
+      task:
+        args: 'argument'

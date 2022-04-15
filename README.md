@@ -88,3 +88,6 @@ NOTE: For Mac users, readlink doesn't achieve the same functionality as on GNU/L
 brew install coreutils
 alias readlink=greadlink
 ```
+
+# styleguide.yml
+This is the styleguide I use to write my own code, it's just been added here for reference
