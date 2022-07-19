@@ -200,7 +200,6 @@ else
   $LOCK_CMD ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/$PLAYBOOK "$@"
 fi
 
-
 if [ $? -eq 66 ]
 then
   echo "ERROR: Unable to acquire lock

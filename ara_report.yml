@@ -42,9 +42,16 @@
           args:
             executable: '/bin/bash'
           changed_when: false
+
       rescue:
         - name: 'Error generating ARA report'
           ansible.builtin.debug:
             msg: |
               An error occurred when generating the report, either the ARA server was
               unavailable during this time, or sending the email failed.
+
+      always:
+        - name: 'Remove report file'
+          ansible.builtin.file:
+            path: "{{ ara_report_location }}"
+            state: 'absent'
