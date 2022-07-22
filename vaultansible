@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wrapper for Ansible Vault
+# Script to commit secrets to Hashi Vault
 
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
@@ -8,38 +8,48 @@
 PROJECTDIR=/opt/ansible/projects
 ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 
+# Set ANSIBLEUTILSDIR
+ANSIBLEUTILSDIR="$(dirname `readlink -f $(which $0)`)"
+
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-export ANSIBLE_VAULT_PASSWORD_FILE
+test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
 usage="Usage: $0 [-p project] [-n name] [-r length] [-s] value-to-encrypt
 
     -p project   Name of the project to encrypt a value for
-    -f           Instead of a value, encrypt this file
-    -n name      Name of the variable, optional
+    -f file      Instead of a value, store this file (see NOTE)
+    -n name      Name of the variable
     -r length    Use a randomly generated password, requires pwgen
-    -s           Generates a fully random password with symbols (see NOTE)
+    -s           Generates a fully random password with symbols (see NOTE2)
     -h           This text
 
 If the value-to-encrypt is not provided, the script will prompt for it.
 
-NOTE: The  pwgen  program  generates passwords which are designed to be easily
+NOTE: If uploading files, they will be encoded as base64. This might not work
+for all files.
+
+NOTE2: The  pwgen  program  generates passwords which are designed to be easily
 memorized by humans, while being as secure as possible. Passwords generated with
 -s are not human-friendly (but can contain illegal symbols depending on the software
 that uses it).
 "
 
+VARNAME=''
+DEBUG=false
 FILE=false
 PWGEN=false
 PWGEN_OPTS=''
-VAULT_MODE='encrypt_string'
 
-while getopts "fhn:p:r:s" opt; do
+while getopts "dfhn:p:r:s" opt; do
   case ${opt} in
+    d)
+      DEBUG=true
+      PLAYBOOK_ARGS='-vvv'
+      ;;
     f)
       FILE=true
-      VAULT_MODE='encrypt'
       ;;
     p)
       PROJECT="${OPTARG}"
@@ -61,12 +71,22 @@ while getopts "fhn:p:r:s" opt; do
   esac
 done
 
+if [ -z "$VARNAME" ]
+then
+  echo -e "$usage"
+  exit 1
+fi
+
 shift $[$OPTIND -1]
 INPUT="$@"
 
 if $FILE && [ -f "$INPUT" ]
 then
-  INPUT=$(realpath "$INPUT")
+  INPUT=$(cat $(realpath "$INPUT") | base64 -w 0)
+elif $FILE && [ ! -f "$INPUT" ]
+then
+  echo "ERROR: File does not exist!"
+  exit 1
 fi
 
 if $PWGEN
@@ -99,11 +119,22 @@ then
   echo -e "Generated password: $INPUT \n"
 fi
 
-if [ -n "$VARNAME" ]
-then
-  echo -n "$VARNAME: "
-fi
-
 cd $PROJECTDIR/$PROJECT
 
-ansible-vault $VAULT_MODE "$INPUT"
+ansible-playbook -vv $PLAYBOOK_ARGS $ANSIBLEUTILSDIR/upload_to_hashivault.yml -e input_name=$VARNAME -e input_secret="$INPUT" -e vault_debug=$DEBUG
+
+echo "This variable is accessable using:
+
+$VARNAME: {{ lookup('community.hashi_vault.vault_kv2_get', '$VARNAME')['data']['data']['value'] }}
+"
+
+if $FILE
+then
+  echo "You can write it out to disk with:
+
+  - name: 'Write $VARNAME'
+    ansible.builtin.copy:
+      content: \"{{ lookup('community.hashi_vault.vault_kv2_get', 'file_tgz')['data']['data']['value'] | b64decode }}\"
+      dest: '/tmp/$VARNAME'
+"
+fi
