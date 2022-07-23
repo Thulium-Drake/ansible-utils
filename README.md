@@ -5,10 +5,11 @@ This repo provides some tools I use to run Ansible scripts.
 * gpgkey: not specifically for Ansible, but will check if GPG keys are loaded in an gpg-agent (for unattended use)
 * gpgkey_el7: this version uses paths for EL7 (see description in script)
 * retrieve_vault.sh: this script is able to retrieve an Ansible vault password from a GPG encrypted file
-* encryptansible: this script will encrypt values for use in the desired project
+* encryptansible: this script will encrypt values or files for use in the desired project
 * runansible: this script wraps ansible-playbook in some options I like to use
-* showansible: this script will (encrypted) retrieve variables from your inventory and show them on the commandline
+* showansible: this script will retrieve (encrypted) variables from your inventory and show them on the commandline
 * update_checkout: also not specifically for Ansible, but will update a Git checkout and any submodules present (note, will remove all untracked stuff as well)
+* vaultansible: this script will upload values or files into HashiCorp Vault for use in the desired project
 
 ## Setup retrieve_vault.sh
 The idea behind this script is to retrieve the GPG encrypted ansible-vault key
@@ -88,6 +89,21 @@ NOTE: For Mac users, readlink doesn't achieve the same functionality as on GNU/L
 brew install coreutils
 alias readlink=greadlink
 ```
+
+# Setup vaultansible
+This script requires an already set up HashiCorp Vault instance for use. This script leverages the ```community.hashi_vault``` collection's modules to interact with Vault. So you need to have those available as well.
+
+Due to that setup, it also uses the Ansible Inventory for it's configuration, add the following values to your ```group_vars/all.yml```. Do note that the script assumes the Vault recommended authentication method of AppRole:
+
+```
+ansible_hashi_vault_url: 'https://vault.example.nl'
+ansible_hashi_vault_auth_method: 'approle'
+ansible_hashi_vault_role_id: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+ansible_hashi_vault_secret_id: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+ansible_hashi_vault_engine_mount_point: 'ansible'  # This is the _name_ of the KV2 secrets engine instance
+```
+
+After storing a variable or file, the script will print out a snippet you can use to retrieve the variable.
 
 # styleguide.yml
 This is the styleguide I use to write my own code, it's just been added here for reference
