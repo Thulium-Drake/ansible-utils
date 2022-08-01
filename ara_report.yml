@@ -55,3 +55,4 @@
           ansible.builtin.file:
             path: "{{ ara_report_location }}"
             state: 'absent'
+          changed_when: false
