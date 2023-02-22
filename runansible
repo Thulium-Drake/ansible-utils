@@ -18,6 +18,7 @@ OLD_ANSIBLE=true
 UPDATE_GIT=false
 SWITCH_BRANCHES=false
 IGNORE_LOCK=false
+CLEAR_CACHE=false
 SPARSE=false
 DISABLE_EXTENDED_ARA_INFO=false
 INVENTORY=""
@@ -38,6 +39,7 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
                  git branch, run Ansible and then check out $DEFAULT_BRANCH
     -c           Tell ansible-galaxy to ignore SSL errors when downloading
                  roles/collections
+    -C           Clear the inventory/facts cache before starting
     -g           Update git checkout before running
     -i file      Name of the inventory to use, can be provided multiple times
     -l           Ignore locks and allow for multiple instances of $(basename $0)
@@ -57,7 +59,7 @@ NOTE: You can override the scripts default settings in ~/.runansible.conf
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "Ab:cglhi:mp:srR" opt; do
+while getopts "Ab:cCglhi:mp:srR" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
@@ -69,6 +71,9 @@ while getopts "Ab:cglhi:mp:srR" opt; do
       ;;
     c)
       GALAXY_OPTS='-c'
+      ;;
+    C)
+      CLEAR_CACHE=true
       ;;
     g)
       UPDATE_GIT=true
@@ -116,6 +121,11 @@ fi
 cd $PROJECTDIR/$PROJECT
 
 test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
+
+if $CLEAR_CACHE
+then
+  rm -f $PROJECTDIR/$PROJECT/cache/*
+fi
 
 # check for update_checkout and use that if it's present
 if $UPDATE_GIT
