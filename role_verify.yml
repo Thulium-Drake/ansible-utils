@@ -1,0 +1,33 @@
+---
+- name: 'Validate Ansible roles'
+  gather_facts: false
+  hosts: 'all'
+  connection: 'local'
+  become: false
+  run_once: true
+  any_errors_fatal: true
+  tasks:
+    - name: 'List roles'
+      ansible.builtin.find:
+        path: "{{ playbook_dir }}/../roles"  # Ansible doesn't have a fact for the role_path
+        file_type: 'directory'
+        recurse: false
+      register: 'roles'
+      delegate_to: 'localhost'
+
+    - name: 'Assemble list of roles to verify'
+      ansible.builtin.set_fact:
+        verify_list: "{{ verify_list | default([]) + [role] }}"
+      when: role.split('/')[-1] not in role_verify_exceptions | default([])
+      loop: "{{ roles['files'] | map(attribute='path') }}"
+      loop_control:
+        loop_var: 'role'
+
+    - name: 'Verify Ansible-Sign signatures'
+      ansible.builtin.command: ansible-sign project gpg-verify {{ role }}
+      changed_when: false
+      loop: "{{ roles['files'] | map(attribute='path') }}"
+      loop_control:
+        loop_var: 'role'
+        label: "{{ role.split('/')[-1] }}"
+      delegate_to: 'localhost'
