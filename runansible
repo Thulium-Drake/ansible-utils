@@ -20,6 +20,7 @@ SWITCH_BRANCHES=false
 IGNORE_LOCK=false
 CLEAR_CACHE=false
 SPARSE=false
+VERIFY_ROLES=false
 DISABLE_EXTENDED_ARA_INFO=false
 INVENTORY=""
 DEFAULT_BRANCH=master
@@ -48,6 +49,7 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -p project   Name of the project to run the playbook from
     -r           Search for requirements.yml and update roles/collections
     -s           Make Ansible's output sparse
+    -v           Verify Ansible roles before running playbook, see README.md
     -h           This text
 
 By default, this script will attempt to exclusively lock the playbook that is executed.
@@ -59,7 +61,7 @@ NOTE: You can override the scripts default settings in ~/.runansible.conf
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "Ab:cCglhi:mp:srR" opt; do
+while getopts "Ab:cCghi:lmp:rsv" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
@@ -78,6 +80,10 @@ while getopts "Ab:cCglhi:mp:srR" opt; do
     g)
       UPDATE_GIT=true
       ;;
+    h)
+      echo -e "$usage"
+      exit 0
+      ;;
     i)
       INVENTORY="${INVENTORY} -i $OPTARG"
       ;;
@@ -90,18 +96,17 @@ while getopts "Ab:cCglhi:mp:srR" opt; do
     p)
       PROJECT="$OPTARG"
       ;;
+    r)
+      UPDATE_ROLES=true
+      ;;
     s)
       export ANSIBLE_DISPLAY_FAILED_STDERR=true
       export ANSIBLE_DISPLAY_OK_HOSTS=false
       export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
       export SPARSE=true
       ;;
-    r)
-      UPDATE_ROLES=true
-      ;;
-    h)
-      echo -e "$usage"
-      exit 0
+    v)
+      export VERIFY_ROLES=true
       ;;
   esac
 done
@@ -195,10 +200,17 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
   LOCK_CMD=""
 fi
 
+# Generate temporary ephemeral playbook, add extra plays and execute
+> $PLAYBOOKDIR/.$$.$PLAYBOOK
+
+if $VERIFY_ROLES
+then
+  cat $ANSIBLEUTILSDIR/role_verify.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
+fi
+
 if ! $DISABLE_EXTENDED_ARA_INFO
 then
-  # Generate temporary ephemeral playbook and execute it
-  cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK > $PLAYBOOKDIR/.$$.$PLAYBOOK
+  cat $ANSIBLEUTILSDIR/ara_info.yml $PLAYBOOKDIR/$PLAYBOOK >> $PLAYBOOKDIR/.$$.$PLAYBOOK
   if $SEND_MAIL
   then
     cat $ANSIBLEUTILSDIR/ara_report.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK

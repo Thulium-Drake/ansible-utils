@@ -3,6 +3,7 @@
   hosts: 'all'
   gather_facts: false
   become: false
+  connection: 'local'
   tasks:
     - name: 'Collect information for ARA'
       delegate_to: 'localhost'

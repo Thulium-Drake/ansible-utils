@@ -3,6 +3,7 @@
   hosts: 'all'
   gather_facts: false
   become: false
+  connection: 'local'
   tasks:
     - name: 'Generate report'
       delegate_to: 'localhost'
