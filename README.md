@@ -55,24 +55,22 @@ ln -s /path/to/repo/runansible /usr/local/bin
 ```
 * You can now use it to run your playbook runs!
 
-```
-Usage: /usr/local/bin/runansible [-p project] [-i inventory] [-s] playbook.yml
+### Role verification
+```runansible``` can verify the GPG signatures of each role signed with Ansible-Sign (https://github.com/ansible/ansible-sign) by passing ```-v``` to the options.
 
-    -b branch    Run on specific git branch
-                 When using this option, the script will check out the specified
-                 git branch, run Ansible and then check out master
-    -g           Update git checkout before running
-    -l           Ignore locks and allow for multiple instances of runansible
-    -p project   Name of the project to run the playbook from
-    -i project   Name of the inventory to use, can be provided multiple times
-    -r           Update roles before running playbook
-    -R           Update roles before running playbook (compatible with 2.9)
-    -s           Make Ansible's output sparse
-    -h           This text
+You can configure the following variables in your Ansble Projects for this functionality:
 
-By default, this script will attempt to exclusively lock the playbook that is executed.
-This is to prevent multiple runs of the same playbook at once.
 ```
+# Exclude known unsigned (or badly signed) roles from verification, defaults to []
+role_verify_exceptions:
+  - 'role1'
+  - 'role2'
+
+# If roles do not pass validation, continue anyway, defaults to true
+role_verify_strict: false
+```
+
+NOTE: If any role is not (correctly) validated in strict mode, this means the execution of your playbook will _NOT_ continue.
 
 # facts2mediawiki.sh
 This script will use Ansible's JSON file fact cache and generate pages for Mediawiki.
@@ -90,7 +88,7 @@ brew install coreutils
 alias readlink=greadlink
 ```
 
-# Setup vaultansible
+## Setup vaultansible
 This script requires an already set up HashiCorp Vault instance for use. This script leverages the ```community.hashi_vault``` collection's modules to interact with Vault. So you need to have those available as well.
 
 Due to that setup, it also uses the Ansible Inventory for it's configuration, add the following values to your ```group_vars/all.yml```. Do note that the script assumes the Vault recommended authentication method of AppRole:
@@ -105,5 +103,5 @@ ansible_hashi_vault_engine_mount_point: 'ansible'  # This is the _name_ of the K
 
 After storing a variable or file, the script will print out a snippet you can use to retrieve the variable.
 
-# styleguide.yml
+## styleguide.yml
 This is the styleguide I use to write my own code, it's just been added here for reference

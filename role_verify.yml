@@ -24,10 +24,24 @@
         loop_var: 'role'
 
     - name: 'Verify Ansible-Sign signatures'
-      ansible.builtin.command: ansible-sign project gpg-verify {{ role }}
+      ansible.builtin.command: ansible-sign --nocolor project gpg-verify {{ role }}
+      register: 'role_verify'
       changed_when: false
       loop: "{{ roles['files'] | map(attribute='path') }}"
       loop_control:
         loop_var: 'role'
         label: "{{ role.split('/')[-1] }}"
       delegate_to: 'localhost'
+      failed_when:
+        - role_verify['rc'] != 0
+        - role_verify_strict | default(true) | bool
+
+    - name: 'WARNING: The following roles did not verify succesfully'
+      ansible.builtin.debug:
+        msg: |
+          The role verification is running in non-strict mode and therefore will continue.
+          However, the following errors came up when verifying:
+
+          {{ role_verify['results'] | rejectattr('rc', 'equalto', 0) | map(attribute='stdout') }}
+      when: not role_verify_strict| default(true) | bool
+      changed_when: true
