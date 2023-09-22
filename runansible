@@ -55,6 +55,8 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
 By default, this script will attempt to exclusively lock the playbook that is executed.
 This is to prevent multiple runs of the same playbook at once.
 
+The script supports Bitwarden/Vaultwarden, see README for more details.
+
 NOTE: You can override the scripts default settings in ~/.runansible.conf
 "
 
@@ -124,6 +126,13 @@ then
 fi
 
 cd $PROJECTDIR/$PROJECT
+
+if test -f .bitwarden.gpg
+then
+  $(cat .bitwarden.gpg | gpg -qd)
+  bw login --apikey
+  export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
+fi
 
 test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 

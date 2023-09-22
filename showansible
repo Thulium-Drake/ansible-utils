@@ -62,6 +62,13 @@ cd $PROJECTDIR/$PROJECT
 
 test -f $PROJECTDIR/$PROJECT/$ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
+if test -f .bitwarden.gpg
+then
+  $(cat .bitwarden.gpg | gpg -qd)
+  bw login --apikey
+  export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
+fi
+
 [[ "$FILE" != '' ]] && FILE="-e @$(find $INVENTORYDIR -name $FILE | tail -1)"
 
 mapfile -d $'\0' POSSIBLE_INPUTS < <(find -L $PROJECTDIR/$PROJECT/$FILESDIR -name $INPUT -print0)
