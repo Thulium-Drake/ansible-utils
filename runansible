@@ -129,6 +129,7 @@ cd $PROJECTDIR/$PROJECT
 
 if test -f .bitwarden.gpg
 then
+  # Export bitwarden envvars
   $(cat .bitwarden.gpg | gpg -qd)
   bw login --apikey
   export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)

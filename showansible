@@ -64,6 +64,7 @@ test -f $PROJECTDIR/$PROJECT/$ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAUL
 
 if test -f .bitwarden.gpg
 then
+  # Export bitwarden envvars
   $(cat .bitwarden.gpg | gpg -qd)
   bw login --apikey
   export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
