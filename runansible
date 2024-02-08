@@ -189,8 +189,8 @@ then
       ansible-galaxy install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
       $OLD_ANSIBLE && ansible-galaxy collection install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS >/dev/null 2>&1
     else
-      ansible-galaxy install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
-      $OLD_ANSIBLE && ansible-galaxy collection install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | egrep -v '[Dd]ownloading|changing|extracting|Installing|Process'
+      ansible-galaxy install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | grep -Ev '[Dd]ownloading|changing|extracting|Installing|Process'
+      $OLD_ANSIBLE && ansible-galaxy collection install $GALAXY_OPTS --ignore-errors -f $REQUIREMENTS | grep -Ev '[Dd]ownloading|changing|extracting|Installing|Process'
     fi
   fi
 fi
