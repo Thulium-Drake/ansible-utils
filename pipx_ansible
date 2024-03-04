@@ -2,7 +2,7 @@
 # Handle pipx venvs for Ansible toolchain
 ACTIVE=$1
 
-INJECT="ara ansible-merge-vars dnspython jmespath netaddr python-dateutil pytz requests[socks]"
+INJECT="ara ansible-merge-vars dnspython jmespath netaddr python-dateutil pytz requests[socks] setuptools"
 TOOLS="ansible-creator ansible-lint ansible-navigator ansible-runner ansible-sign ara molecule pre-commit"
 
 echo "Updating toolchain via PipX"
