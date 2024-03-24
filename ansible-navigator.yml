@@ -1,0 +1,20 @@
+---
+ansible-navigator:
+  execution-environment:
+    image: <your EE URI here>
+    environment-variables:
+      pass:
+        - ANSIBLE_VAULT_PASSWORD
+        - SSH_AUTH_SOCK
+      set:
+        ANSIBLE_VAULT_PASSWORD_FILE: ./.ansible-vault-ee
+    volume-mounts:
+      - src: $SSH_AUTH_SOCK
+        dest: $SSH_AUTH_SOCK
+      - src: /home/ansible/git/shell
+        dest: /home/ansible/git/shell
+  mode: stdout
+  logging:
+    file: /dev/null
+  playbook-artifact:
+    enable: false
