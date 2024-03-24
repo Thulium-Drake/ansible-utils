@@ -28,6 +28,7 @@ ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 ARA_MAIL=root@localhost
 ARA_REPORT_URL=""
 SEND_MAIL=false
+USE_NAVIGATOR=false
 
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
@@ -46,6 +47,7 @@ usage="Usage: $0 [-p project] [-i inventory] [-s] playbook.yml [ansible-playbook
     -l           Ignore locks and allow for multiple instances of $(basename $0)
     -m email     Send a e-mail with the ARA report to $ARA_MAIL
                  This uses 'mail' on the Ansible controller to send the message
+    -n           Utilize Ansible Navigator with a Execution Environment to execute the playbook
     -p project   Name of the project to run the playbook from
     -r           Search for requirements.yml and update roles/collections
     -s           Make Ansible's output sparse
@@ -63,7 +65,7 @@ NOTE: You can override the scripts default settings in ~/.runansible.conf
 BRANCH=$DEFAULT_BRANCH
 GALAXY_OPTS=''
 
-while getopts "Ab:cCghi:lmp:rsv" opt; do
+while getopts "Ab:cCghi:lmnp:rsv" opt; do
   case ${opt} in
     A)
       DISABLE_EXTENDED_ARA_INFO=true
@@ -94,6 +96,9 @@ while getopts "Ab:cCghi:lmp:rsv" opt; do
       ;;
     m)
       SEND_MAIL=true
+      ;;
+    n)
+      USE_NAVIGATOR=true
       ;;
     p)
       PROJECT="$OPTARG"
@@ -133,6 +138,13 @@ then
   $(cat .bitwarden.gpg | gpg -qd)
   bw login --apikey
   export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
+fi
+
+if ! test -f ansible-navigator.yml -a $USE_NAVIGATOR
+then
+  echo 'ERROR: Requested the use of ansible-navigator, but no configuration was found!'
+  echo 'Please configure ansible-navigator.yml'
+  exit 1
 fi
 
 test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
@@ -200,7 +212,6 @@ then
   git checkout $BRANCH >/dev/null 2>&1
 fi
 
-LOCK_CMD="flock -n -x -E 66 $PLAYBOOKDIR/$PLAYBOOK "
 if $IGNORE_LOCK
 then
   echo "WARNING: Ignoring locking and starting concurrent run
@@ -232,11 +243,26 @@ fi
 
 sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
 
+# Prepare for using navigator
+if $USE_NAVIGATOR
+then
+  if test -x $ANSIBLE_VAULT_PASSWORD_FILE
+  then
+    export ANSIBLE_VAULT_PASSWORD=$(./$ANSIBLE_VAULT_PASSWORD_FILE)
+  else
+    export ANSIBLE_VAULT_PASSWORD=$(cat $ANSIBLE_VAULT_PASSWORD_FILE)
+  fi
+
+  ANSIBLE_COMMAND="ansible-navigator run"
+else
+  ANSIBLE_COMMAND="ansible-playbook"
+fi
+
 if ! $DISABLE_EXTENDED_ARA_INFO
 then
-  $LOCK_CMD ansible-playbook $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  $LOCK_CMD $ANSIBLE_COMMAND $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
 else
-  $LOCK_CMD ansible-playbook $INVENTORY --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  $LOCK_CMD $ANSIBLE_COMMAND $INVENTORY --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
 fi
 
 rm $PLAYBOOKDIR/.$$.$PLAYBOOK

@@ -147,3 +147,11 @@ After storing a variable or file, the script will print out a snippet you can us
 
 ## styleguide.yml
 This is the styleguide I use to write my own code, it's just been added here for reference
+
+## Ansible Navigator support
+runansible has support for using Ansible Navigator in order to execute the playbooks using a Execution Environemnt (EE).
+
+This requires the following:
+
+  * ansible-navigator installed on your system
+  * ansible-navigator.yml configuration present in the project (see repo for an example)
