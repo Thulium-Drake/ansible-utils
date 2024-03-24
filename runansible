@@ -140,13 +140,6 @@ then
   export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
 fi
 
-if ! test -f ansible-navigator.yml -a $USE_NAVIGATOR
-then
-  echo 'ERROR: Requested the use of ansible-navigator, but no configuration was found!'
-  echo 'Please configure ansible-navigator.yml'
-  exit 1
-fi
-
 test -f $ANSIBLE_VAULT_PASSWORD_FILE && export ANSIBLE_VAULT_PASSWORD_FILE
 
 if $CLEAR_CACHE
@@ -177,6 +170,14 @@ then
       git pull
     fi
   fi
+fi
+
+# Check if we can run with navigator when requested
+if ! test -f ansible-navigator.yml -a $USE_NAVIGATOR
+then
+  echo 'ERROR: Requested the use of ansible-navigator, but no configuration was found!'
+  echo 'Please configure ansible-navigator.yml'
+  exit 1
 fi
 
 if [ ! -f "$PLAYBOOKDIR/$PLAYBOOK" ]
