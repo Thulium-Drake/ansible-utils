@@ -173,7 +173,7 @@ then
 fi
 
 # Check if we can run with navigator when requested
-if test [ ! -f ansible-navigator.yml ] -a $USE_NAVIGATOR
+if $USE_NAVIGATOR && test ! -f ansible-navigator.yml
 then
   echo 'ERROR: Requested the use of ansible-navigator, but no configuration was found!'
   echo 'Please configure ansible-navigator.yml'
