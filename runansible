@@ -173,7 +173,7 @@ then
 fi
 
 # Check if we can run with navigator when requested
-if ! test -f ansible-navigator.yml -a $USE_NAVIGATOR
+if test [ ! -f ansible-navigator.yml ] -a $USE_NAVIGATOR
 then
   echo 'ERROR: Requested the use of ansible-navigator, but no configuration was found!'
   echo 'Please configure ansible-navigator.yml'
@@ -261,7 +261,8 @@ fi
 
 if ! $DISABLE_EXTENDED_ARA_INFO
 then
-  $LOCK_CMD $ANSIBLE_COMMAND $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'" --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
+  ARA_PLAYBOOK_NAME="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'"
+  $LOCK_CMD $ANSIBLE_COMMAND $PLAYBOOKDIR/.$$.$PLAYBOOK $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="$ARA_PLAYBOOK_NAME" --diff "$@"
 else
   $LOCK_CMD $ANSIBLE_COMMAND $INVENTORY --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
 fi
