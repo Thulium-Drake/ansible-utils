@@ -9,6 +9,7 @@ echo "Updating toolchain via PipX"
 for i in $TOOLS
 do
   pipx install $i 1>/dev/null 2>&1 || pipx upgrade $i 1>/dev/null 2>&1
+  pipx inject $i setuptools 1>/dev/null 2>&1
 done
 
 echo "Processing PipX environment for Ansible $ACTIVE"
