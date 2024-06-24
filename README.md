@@ -59,6 +59,7 @@ GPG passphrase.
 In order to use Bitwarden integration create a GPG encrypted file in the vaults directory with the following content:
 
 ```
+export BW_SERVER=https://bitwarden.com  # Or your own hosted server
 export BW_CLIENTID=user.blahblahblah
 export BW_CLIENTSECRET=somesecretkey
 export BW_PASSWORD=the_bitwarden_master_password
