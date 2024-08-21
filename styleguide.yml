@@ -41,9 +41,14 @@
     loop_var: 'my_loop_var'                     # This will prevent any and all collisions between multiple
                                                 # loops (you can also nest them now!)
 
+- name: 'Conditional tasks'
+  styleguide:
+    do_stuff: true
+  when: some_string == 'magic'                  # When the conditional evaluates as true, it will run the task
+
 - name: 'Blocks should be ordered like this'
-  when: some_variable                           # Python is truthy, that means that if this var is true,
-  block:                                        # it will evaluate as such.
+  when: some_variable | bool                    # To ensure boolean values are processed according to their value
+  block:                                        # pipe them through the bool filter
     - name: 'This can be very useful for very large blocks'
       task:
         args: 'argument'
