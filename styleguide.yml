@@ -40,16 +40,10 @@
   loop_control:
     loop_var: 'my_loop_var'                     # This will prevent any and all collisions between multiple
                                                 # loops (you can also nest them now!)
-- name: 'Blocks can be done in one of 2 ways'
-  block:
-    - name: 'Where, if you need it, put the when: statement at the end'
-      task:
-        args: 'argument'
+
+- name: 'Blocks should be ordered like this'
   when: some_variable                           # Python is truthy, that means that if this var is true,
-                                                # it will evaluate as such.
-- name: 'Or like this'
-  when: some_variable > 8
-  block:
+  block:                                        # it will evaluate as such.
     - name: 'This can be very useful for very large blocks'
       task:
         args: 'argument'
