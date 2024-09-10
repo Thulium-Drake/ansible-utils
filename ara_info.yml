@@ -1,7 +1,7 @@
 ---
 - name: 'Collect and upload information to ARA'
   hosts: 'all'
-  gather_facts: false
+  gather_facts: true
   become: false
   connection: 'local'
   tasks:
