@@ -17,7 +17,7 @@
             ansible-galaxy collection list
           register: 'ansible_role_versions'
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+            PATH: '/usr/local/bin:/usr/bin:/bin'
           changed_when: false
 
         - name: 'Record in ARA'
