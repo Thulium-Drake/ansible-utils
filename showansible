@@ -13,13 +13,14 @@ ANSIBLE_VAULT_PASSWORD_FILE=.ansible-vault
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
 
-usage="Usage: $0 [-p project] [-i] [-f file] variable|file|[group]
+usage="Usage: $0 [-p project] [-i] [-f file] variable|file|host|[group]
 
+    -A host      Show all variable values for host (requires ansible-variables)
     -f file      Which vars file (which vars file to use, e.g. database_servers.yml)
                  Only required for files that do not reside inside
                  <project>/inventory/group_vars
     -p project   Name of the project to retrieve data from
-    -i           Inventory mode, show groups instead of variables,
+    -i [group]   Inventory mode, show groups instead of variables,
                  if no group is supplied, 'all' is used
     -h           This text
 
@@ -33,8 +34,12 @@ NOTE: This is different then using -f, as that is meant to select which vars fil
 FILE=''
 MODE=var
 
-while getopts "f:ihlp:" opt; do
+while getopts "A:f:ihlp:" opt; do
   case ${opt} in
+    A)
+      MODE=allvars
+      INPUT="$OPTARG"
+      ;;
     f)
       FILE="$OPTARG"
       ;;
@@ -94,6 +99,14 @@ then
 fi
 
 case "$MODE" in
+  allvars)
+    if [ "$(which ansible-variables)" == '' ]
+    then
+      echo "ERROR: ansible-variables not installed\n$usage"
+      exit 1
+    fi
+    ansible-variables $INPUT
+    ;;
   file)
     ansible -i /dev/null localhost -m debug -a msg="{{ lookup('file', \'$INPUT\') }}" | cut -d\> -f2 | jq -r .msg
     ;;
