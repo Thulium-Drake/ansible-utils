@@ -29,6 +29,7 @@ ARA_MAIL=root@localhost
 ARA_REPORT_URL=""
 SEND_MAIL=false
 USE_NAVIGATOR=false
+BW_SERVER=https://bitwarden.com
 
 # Override any defaults that are set by the user
 test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
