@@ -263,6 +263,7 @@ fi
 
 if ! $DISABLE_EXTENDED_ARA_INFO
 then
+  ARA_RECORD_CONTROLLER_NAME=$(hostname -f)
   ARA_PLAYBOOK_NAME="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'"
   $LOCK_CMD $ANSIBLE_COMMAND $PLAYBOOKDIR/.$$.$PLAYBOOK $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="$ARA_PLAYBOOK_NAME" --diff "$@"
 else
