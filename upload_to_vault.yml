@@ -1,0 +1,34 @@
+---
+- name: 'Upload secret in Hashi Vault or OpenBao'
+  gather_facts: false
+  hosts: 'localhost'
+  tasks:
+    - name: 'Print value (debug-only)'
+      ansible.builtin.debug:
+        msg: |
+          Name: "{{ input_name }}"
+          Secret: {{ input_secret }}
+      when: vault_debug | bool
+
+    - name: 'Authenticate against Vault with AppRole credentials'
+      when: ansible_hashi_vault_role_id is defined
+      no_log: "{{ not vault_debug | bool }}"
+      block:
+        - name: 'Authenticate against Vault'
+          ansible.builtin.set_fact:
+            login_data: "{{ lookup('community.hashi_vault.vault_login', auth_method='approle') }}"
+
+        - name: 'Authenticate against Vault'
+          ansible.builtin.set_fact:
+            ansible_hashi_vault_token: "{{ login_data | community.hashi_vault.vault_login_token }}"
+
+    - name: "Store {{ input_name }} in the project's Vault"
+      community.hashi_vault.vault_write:
+        url: "{{ ansible_hashi_vault_url }}"
+        path: "{{ ansible_hashi_vault_engine_mount_point }}/data/{{ input_name }}"
+        auth_method: 'token'
+        token: "{{ ansible_hashi_vault_token }}"
+        data:
+          data:
+            value: "{{ input_secret }}"
+      no_log: "{{ not vault_debug | bool }}"

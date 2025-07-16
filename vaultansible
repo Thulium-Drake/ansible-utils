@@ -121,11 +121,11 @@ fi
 
 cd $PROJECTDIR/$PROJECT
 
-ansible-playbook -vv $PLAYBOOK_ARGS $ANSIBLEUTILSDIR/upload_to_hashivault.yml -e input_name=$VARNAME -e input_secret="$INPUT" -e vault_debug=$DEBUG
+ansible-playbook -vv $PLAYBOOK_ARGS $ANSIBLEUTILSDIR/upload_to_vault.yml -e input_name=$VARNAME -e input_secret="$INPUT" -e vault_debug=$DEBUG
 
 echo "This variable is accessable using:
 
-$VARNAME: {{ lookup('community.hashi_vault.vault_kv2_get', '$VARNAME')['data']['data']['value'] }}
+$VARNAME: {{ lookup('community.hashi_vault.vault_kv2_get', '$VARNAME')['secret']['value'] }}
 "
 
 if $FILE
@@ -134,7 +134,8 @@ then
 
   - name: 'Write $VARNAME'
     ansible.builtin.copy:
-      content: \"{{ lookup('community.hashi_vault.vault_kv2_get', 'file_tgz')['data']['data']['value'] | b64decode }}\"
+      content: \"{{ lookup('community.hashi_vault.vault_kv2_get', '$VARNAME')['secret']['value'] | b64decode }}\"
+      mode: '0660'
       dest: '/tmp/$VARNAME'
 "
 fi

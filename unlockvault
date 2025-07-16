@@ -1,0 +1,30 @@
+#!/bin/bash
+# Unlocks a Hashi or OpenBao vault, assumes userpass authentication and an approle for Ansible
+
+# Defaults
+VAULT_ROLE=ansible
+
+# Override any defaults that are set by the user
+test -f $HOME/.runansible.conf && . $HOME/.runansible.conf
+
+# Check for bao or vault CLI tools
+for i in bao vault
+do
+  if command -v $i
+  then
+    VAULT_BIN=$i
+    export ${i^^}_ADDR
+    break
+  fi
+done
+
+# Get user login details
+echo "Log in with your own credentials"
+read -p "Vault username: " USERNAME
+TOKEN_ACCESSOR=$($VAULT_BIN login --method userpass username=$USERNAME | grep accessor | awk '{print $2}')
+
+# Retrieving Secret ID for Ansible
+$VAULT_BIN write -force -field=secret_id auth/approle/role/$VAULT_ROLE/secret-id
+
+# Destroying user login token that was used
+$VAULT_BIN write auth/token/revoke-accessor accessor=$TOKEN_ACCESSOR
