@@ -5,30 +5,44 @@ ACTIVE=$1
 INJECT="ara ansible-merge-vars dnspython jmespath netaddr passlib proxmoxer python-dateutil pytz requests[socks] setuptools"
 TOOLS="ansible-builder ansible-creator ansible-lint ansible-navigator ansible-runner ansible-sign ara molecule pre-commit"
 
+LOGFILE="$( mktemp )"
+
+function error_and_quit(){
+  echo "Error: an error occurred. Log information:"
+  echo "******************************************"
+  cat "${LOGFILE}"
+  echo "******************************************"
+  rm "${LOGFILE}"
+  exit 1
+}
+
 echo "Updating toolchain via PipX"
-for i in $TOOLS
+for i in ${TOOLS}
 do
-  pipx install $i 1>/dev/null 2>&1 || pipx upgrade $i 1>/dev/null 2>&1
-  pipx inject $i setuptools 1>/dev/null 2>&1
+  pipx install "${i}" 1>>"${LOGFILE}" 2>&1 || pipx upgrade "${i}" 1>>"${LOGFILE}" 2>&1
+  pipx inject "${i}" setuptools 1>>"${LOGFILE}" 2>&1
 done
 
-echo "Processing PipX environment for Ansible $ACTIVE"
+echo "Processing PipX environment for Ansible ${ACTIVE}"
 env=${ACTIVE/./-}
-if ! test -d $HOME/.local/share/pipx/venvs/ansible-core-$env
+if ! test -d "${HOME}/.local/share/pipx/venvs/ansible-core-${env}" -a -d "${HOME}/.local/pipx/venvs/ansible-core-${env}"
 then
-  pipx install ansible-core==$ACTIVE --suffix _$env 1>/dev/null 2>&1
+  pipx install ansible-core=="${ACTIVE}" --suffix "_${env}" 1>>"${LOGFILE}" 2>&1 || error_and_quit
 fi
 
-pipx inject ansible-core_$env $INJECT 1>/dev/null 2>&1
-pipx upgrade ansible-core_$env --include-injected --pip-args "ansible-core<=${ACTIVE}.99" 1>/dev/null 2>&1
+pipx inject "ansible-core_${env}" ${INJECT} 1>>"${LOGFILE}" 2>&1 || error_and_quit
+pipx upgrade "ansible-core_${env}" --include-injected --pip-args "ansible-core<=${ACTIVE}.99" 1>>"${LOGFILE}" 2>&1 || error_and_quit
 
-if test -n "$ACTIVE"
+if test -n "${ACTIVE}"
 then
   env=${ACTIVE/./-}
-  echo "Activating venv for Ansible $ACTIVE"
-  cd $HOME/.local/bin
+  echo "Activating venv for Ansible ${ACTIVE}"
+  cd "${HOME}/.local/bin" || exit 1
   for i in ansible ansible-config ansible-connection ansible-console ansible-doc ansible-galaxy ansible-inventory ansible-playbook ansible-pull ansible-test ansible-vault
   do
-    ln -nfs ${i}_${env} $i
-done
+    ln -nfs "${i}_${env}" "${i}"
+  done
 fi
+
+# cleanup after successfull run
+rm "${LOGFILE}"
