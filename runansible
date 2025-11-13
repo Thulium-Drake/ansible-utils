@@ -256,6 +256,11 @@ then
     export ANSIBLE_VAULT_PASSWORD=$(cat $ANSIBLE_VAULT_PASSWORD_FILE)
   fi
 
+  if test -e .bitwarden.gpg
+  then
+    source <(cat .bitwarden.gpg | gpg -qd)
+  fi
+
   ANSIBLE_COMMAND="ansible-navigator run"
 else
   ANSIBLE_COMMAND="ansible-playbook"
