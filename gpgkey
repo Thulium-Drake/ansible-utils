@@ -1,36 +1,49 @@
 #!/bin/bash
+
+for APPLICATION in gpg gpg-agent gpg-connect-agent ; do
+  command -v ${APPLICATION} >/dev/null 2>&1
+  
+  if [ ${?} -ne 0 ]
+  then
+    echo "error: ${APPLICATION} not found"
+    APPLICATION_NOT_FOUND=1
+  fi
+done
+[ ${APPLICATION_NOT_FOUND:-0} -ne 0 ] && exit 1
+
+# determine gpg-preset-passphrase location
+test -f /usr/libexec/gpg-preset-passphrase && GPG_RESET_PASSPHRASE=/usr/libexec/gpg-preset-passphrase
+test -f /usr/lib/gnupg2/gpg-preset-passphrase && GPG_RESET_PASSPHRASE=/usr/lib/gnupg2/gpg-preset-passphrase
+test -f /usr/lib/gnupg/gpg-preset-passphrase && GPG_RESET_PASSPHRASE=/usr/lib/gnupg/gpg-preset-passphrase
+test "${GPG_RESET_PASSPHRASE}" == "" && echo "ERROR: no gpg-preset-passphrase found!" && exit 1
+
 # Get keygrips
-keygrip_sign=$(gpg --list-secret-keys --with-keygrip | grep -A 2 "^sec" | grep Keygrip | sed 's/.* = //')
-keygrip_enc=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[E\]" | grep Keygrip | sed 's/.* = //')
-keygrip_ssh=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[A\]" | grep Keygrip | sed 's/.* = //')
-
-test -f /usr/lib/gnupg2/gpg-preset-passphrase && gpgpresetpassphrase=/usr/lib/gnupg2/gpg-preset-passphrase
-test -f /usr/libexec/gpg-preset-passphrase && gpgpresetpassphrase=/usr/libexec/gpg-preset-passphrase
-
-test "$gpgpresetpassphrase" == "" && echo "ERROR: no gpg-preset-passphrase found!" && exit 1
+KEYGRIP_SIGN=$(gpg --list-secret-keys --with-keygrip | grep -A 2 "^sec" | grep Keygrip | sed 's/.* = //')
+KEYGRIP_ENC=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[E\]" | grep Keygrip | sed 's/.* = //')
+KEYGRIP_SSH=$(gpg --list-secret-keys --with-keygrip | grep -A 1 "\[A\]" | grep Keygrip | sed 's/.* = //')
 
 function check() {
-  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  for kg in $KEYGRIP_SIGN $KEYGRIP_ENC $KEYGRIP_SSH
   do
-    gpg-connect-agent "keyinfo --list" /bye | grep $kg | grep " 1 " > /dev/null 2>&1
-    test $? -ne 0 && echo "$kg is not loaded"
+    gpg-connect-agent "keyinfo --list" /bye | grep ${kg} | grep " 1 " > /dev/null 2>&1
+    test $? -ne 0 && echo "${kg} is not loaded"
   done
 }
 
 function unlock() {
-  read -sp "Enter Passphrase: " passphrase
+  read -sp "Enter Passphrase: " PASSPHRASE
 
-  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  for kg in $KEYGRIP_SIGN $KEYGRIP_ENC $KEYGRIP_SSH
   do
-    $gpgpresetpassphrase -c $kg <<< $passphrase
+    ${GPG_RESET_PASSPHRASE} --preset ${kg} <<< ${PASSPHRASE}
   done
 }
 
 function lock() {
-  for kg in $keygrip_sign $keygrip_enc $keygrip_ssh
+  for kg in $KEYGRIP_SIGN $KEYGRIP_ENC $KEYGRIP_SSH
   do
-    gpg-connect-agent "clear_passphrase --mode=normal $kg" /bye
-    $gpgpresetpassphrase -f $kg
+    gpg-connect-agent "clear_passphrase --mode=normal ${kg}" /bye
+    ${GPG_RESET_PASSPHRASE} --forget ${kg}
   done
 }
 
