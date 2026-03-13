@@ -1,0 +1,23 @@
+---
+# Wormo's Wonderful ansible-lint configuration
+# References:
+#   Built-in rules: ansible-lint -L
+#   Custom rules: custom_rules/ (based on styleguide.yml)
+
+# Load the styleguide rules
+rulesdir:
+  - 'custom_rules/'
+
+# Put files/paths to skip here
+exclude_paths:
+  - '.git/'
+  - 'styleguide.yml'
+
+# Custom rules (sg- prefix):
+#   sg-quoted-name         — task/play names must be quoted
+#   sg-quoted-string       — string values should be quoted
+#   sg-jinja-double-quotes — {{ variables }} must use double quotes
+#   sg-bool-lowercase      — booleans must be true/false (not yes/no/True/False)
+#   sg-no-deprecated-loop  — use 'loop' instead of with_*
+#   sg-loop-control        — loop should have loop_control/loop_var
+#   sg-bool-filter         — bare vars in when/changed_when should use | bool
