@@ -5,7 +5,8 @@
 export PYTHONPATH=$PYTHONPATH:/opt/ansible/tools/ara
 
 # Set ANSIBLEUTILSDIR
-ANSIBLEUTILSDIR="$(dirname `readlink -f $(which $0)`)"
+#ANSIBLEUTILSDIR="$(dirname `readlink -f $(which $0)`)"
+ANSIBLEUTILSDIR="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")"
 
 # Load GPG agent's soocket if it isn't there
 [ -z "$SSH_AUTH_SOCK" ] && export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
@@ -119,8 +120,10 @@ while getopts "Ab:cCghi:lmnp:rsv" opt; do
   esac
 done
 
-shift $[$OPTIND -1]
-PLAYBOOK=$1
+shift $((OPTIND - 1))
+PLAYBOOK=$(basename -- "$1")
+PLAYBOOKSUBDIR=$(dirname -- "$1")
+#[[ $PLAYBOOKSUBDIR == . ]] && PLAYBOOKSUBDIR=""
 shift 1
 
 [ -z "$PROJECT" ] || [ -z "$PLAYBOOK" ] && echo "$usage" && exit 1
@@ -182,10 +185,9 @@ then
   exit 1
 fi
 
-if [ ! -f "$PLAYBOOKDIR/$PLAYBOOK" ]
-then
-  echo "ERROR: Playbook does not exist!"
-  exit 1
+if [[ ! -f "$PLAYBOOKDIR/$PLAYBOOK" && ! -f "$PLAYBOOKDIR/$PLAYBOOKSUBDIR/$PLAYBOOK" ]]; then
+    echo "ERROR: Playbook does not exist!"
+    exit 1
 fi
 
 if $UPDATE_ROLES
@@ -225,26 +227,36 @@ Current active branch: $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.
 fi
 
 # Generate temporary ephemeral playbook, add extra plays and execute
+if [ "$PLAYBOOKSUBDIR" = "." ]; then
+FULL_PLAYDIR_PATH=$PLAYBOOKDIR
 > $PLAYBOOKDIR/.$$.$PLAYBOOK
+else
+FULL_PLAYDIR_PATH="$PLAYBOOKDIR/$PLAYBOOKSUBDIR"
+> $PLAYBOOKDIR/$PLAYBOOKSUBDIR/.$$.$PLAYBOOK
+fi
 
 if $VERIFY_ROLES
 then
-  cat $ANSIBLEUTILSDIR/role_verify.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
+  cat $ANSIBLEUTILSDIR/role_verify.yml >> $FULL_PLAYDIR_PATH/.$$.$PLAYBOOK
 fi
 
 if ! $DISABLE_EXTENDED_ARA_INFO
 then
-  cat $ANSIBLEUTILSDIR/ara_info.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
+  cat $ANSIBLEUTILSDIR/ara_info.yml >> $FULL_PLAYDIR_PATH/.$$.$PLAYBOOK
 fi
 
-cat $PLAYBOOKDIR/$PLAYBOOK >> $PLAYBOOKDIR/.$$.$PLAYBOOK
+cat $FULL_PLAYDIR_PATH/$PLAYBOOK >> $FULL_PLAYDIR_PATH/.$$.$PLAYBOOK
 
 if $SEND_MAIL -a ! $DISABLE_EXTENDED_ARA_INFO
 then
   cat $ANSIBLEUTILSDIR/ara_report.yml >> $PLAYBOOKDIR/.$$.$PLAYBOOK
 fi
 
-sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
+if [ $PLAYBOOKSUBDIR = "." ]; then
+  sed -i 's/^---$//' $PLAYBOOKDIR/.$$.$PLAYBOOK
+else
+  sed -i 's/^---$//' $PLAYBOOKDIR/$PLAYBOOKSUBDIR/.$$.$PLAYBOOK
+fi
 
 # Prepare for using navigator
 if $USE_NAVIGATOR
@@ -270,12 +282,18 @@ if ! $DISABLE_EXTENDED_ARA_INFO
 then
   ARA_RECORD_CONTROLLER_NAME=$(hostname -f)
   ARA_PLAYBOOK_NAME="'$PROJECT - $(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') - $PLAYBOOK'"
-  $LOCK_CMD $ANSIBLE_COMMAND $PLAYBOOKDIR/.$$.$PLAYBOOK $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="$ARA_PLAYBOOK_NAME" --diff "$@"
+
+  if [ $PLAYBOOKSUBDIR = "." ]; then
+     $LOCK_CMD $ANSIBLE_COMMAND $PLAYBOOKDIR/.$$.$PLAYBOOK $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="$ARA_PLAYBOOK_NAME" --diff "$@"
+  else
+    $LOCK_CMD $ANSIBLE_COMMAND $PLAYBOOKDIR/$PLAYBOOKSUBDIR/.$$.$PLAYBOOK $INVENTORY -e ara_report_url="$ARA_REPORT_URL" -e ara_report_mail="$ARA_MAIL" -e ara_report_location="/tmp/$$_report" -e ara_playbook_dir="$PROJECTDIR/$PROJECT/$PLAYBOOKDIR" -e ara_playbook_name="$ARA_PLAYBOOK_NAME" --diff "$@"
+  fi
+
 else
   $LOCK_CMD $ANSIBLE_COMMAND $INVENTORY --diff $PLAYBOOKDIR/.$$.$PLAYBOOK "$@"
 fi
 
-rm $PLAYBOOKDIR/.$$.$PLAYBOOK
+rm $FULL_PLAYDIR_PATH/.$$.$PLAYBOOK
 
 if [ $? -eq 66 ]
 then
